@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+anthropic
+httpx
+python-dotenv
+supabase
+numpy
+youtube-transcript-api
