@@ -54,3 +54,9 @@ pyvenv.cfg
 
 # Optional
 *.sqlite3
+
+.env
+backend/.env
+venv/
+__pycache__/
+.next/
