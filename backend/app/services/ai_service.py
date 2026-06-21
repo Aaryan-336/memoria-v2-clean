@@ -25,7 +25,12 @@ def _create_client(api_key: str) -> Anthropic:
     return Anthropic(api_key=api_key)
 
 
-def _call_groq(prompt: str, is_json: bool = False) -> str:
+def _call_groq(
+    prompt: str,
+    is_json: bool = False,
+    max_tokens: int = 4096,
+    system_message: str = "",
+) -> str:
     """Make a synchronous request to Groq Cloud API."""
     settings = get_settings()
     if not settings.groq_api_key:
@@ -40,10 +45,16 @@ def _call_groq(prompt: str, is_json: bool = False) -> str:
         "Content-Type": "application/json",
     }
 
+    messages = []
+    if system_message:
+        messages.append({"role": "system", "content": system_message})
+    messages.append({"role": "user", "content": prompt})
+
     payload = {
         "model": settings.groq_model,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "temperature": 0.2,
+        "max_tokens": max_tokens,
     }
 
     if is_json:
@@ -52,7 +63,7 @@ def _call_groq(prompt: str, is_json: bool = False) -> str:
     url = "https://api.groq.com/openai/v1/chat/completions"
 
     with httpx.Client() as client:
-        response = client.post(url, json=payload, headers=headers, timeout=60.0)
+        response = client.post(url, json=payload, headers=headers, timeout=120.0)
         if response.status_code != 200:
             raise RuntimeError(f"Groq API Error: {response.status_code} - {response.text}")
         data = response.json()
@@ -105,6 +116,15 @@ def parse_json_any(text: str):
     return []
 
 
+# System prompt used for note generation — sets the AI's role
+_NOTES_SYSTEM = (
+    "You are an expert university professor and professional note-taker. "
+    "You create comprehensive, well-structured study notes that would help "
+    "a student ace their exams. Your notes are thorough, detailed, and "
+    "use rich markdown formatting."
+)
+
+
 def process_transcript(
     api_key: str,
     transcript: str,
@@ -114,18 +134,37 @@ def process_transcript(
     """Process a transcript and generate structured notes using Claude or Groq."""
     settings = get_settings()
 
-    prompt = f"""Process this transcript and return ONLY valid JSON with these exact keys:
+    prompt = f"""Analyze the following lecture transcript thoroughly and return ONLY valid JSON with these exact keys:
+
 {{
-  "title": "auto generated title",
-  "summary": "2-3 sentence summary",
-  "key_points": ["point 1", "point 2"],
-  "notes": "structured notes in {note_format} format",
-  "exam_questions": ["question 1", "question 2"],
-  "action_items": [{{"task": "task", "due": null, "priority": "medium"}}],
-  "topics": ["topic1", "topic2"],
-  "mermaid_diagram": "graph TD\\n  A[Start] --> B[End]",
-  "reminders": [{{"text": "reminder", "when": null}}]
+  "title": "A descriptive, specific title for this lecture (not generic)",
+
+  "summary": "A comprehensive 5-8 sentence summary covering the main thesis, key arguments, important conclusions, and practical implications of the lecture.",
+
+  "key_points": [
+    "8-15 key points. Each point should be a complete sentence (15-30 words) that captures a distinct insight, concept, or takeaway. Do NOT write vague placeholders like 'point 1'."
+  ],
+
+  "notes": "COMPREHENSIVE structured notes in {note_format} format using rich markdown. REQUIREMENTS: (1) Use ## headings to organize by topic/section, (2) Use **bold** for key terms and definitions, (3) Include bullet points with detailed explanations (not one-liners), (4) Add sub-bullets for examples, evidence, or clarifications, (5) Include relevant formulas, dates, names, or data mentioned, (6) Minimum 500 words — the notes should be proportional to the lecture length. A long transcript MUST produce long, detailed notes. (7) End with a brief '## Summary' section that ties everything together.",
+
+  "exam_questions": [
+    "Generate 5-10 exam-worthy questions at varying difficulty levels. Include factual recall, conceptual understanding, and application/analysis questions. Each question should be specific to the content, not generic."
+  ],
+
+  "action_items": [{{"task": "Specific actionable task mentioned or implied in the lecture", "due": null, "priority": "medium"}}],
+
+  "topics": ["List 3-8 specific topics/concepts covered, not generic subjects"],
+
+  "mermaid_diagram": "Create a meaningful mermaid diagram (flowchart, mind map, or sequence diagram) that visualizes the key relationships or process flow discussed in the lecture. Use descriptive node labels. Example: graph TD\\n  A[Main Concept] --> B[Sub Topic 1]\\n  A --> C[Sub Topic 2]\\n  B --> D[Detail]\\n  C --> E[Detail]",
+
+  "reminders": [{{"text": "Any deadlines, assignments, or follow-up items mentioned", "when": null}}]
 }}
+
+IMPORTANT RULES:
+- The "notes" field is the MOST important. Make it thorough, detailed, and well-organized.
+- Do NOT produce shallow, one-liner notes. Each section should have real substance.
+- Extract EVERY important concept, definition, example, and explanation from the transcript.
+- If the transcript is long, the notes MUST be proportionally long and detailed.
 
 Transcript:
 {transcript}
@@ -133,12 +172,18 @@ Transcript:
 Return ONLY the JSON, nothing else."""
 
     if settings.ai_provider == "groq" or (not api_key and settings.groq_api_key):
-        response_text = _call_groq(prompt, is_json=True)
+        response_text = _call_groq(
+            prompt,
+            is_json=True,
+            max_tokens=6000,
+            system_message=_NOTES_SYSTEM,
+        )
     else:
         client = _create_client(api_key)
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=2000,
+            max_tokens=6000,
+            system=_NOTES_SYSTEM,
             messages=[{"role": "user", "content": prompt}],
         )
         response_text = response.content[0].text
@@ -150,31 +195,51 @@ def process_youtube(api_key: str, url: str, transcript: str) -> dict:
     """Process a YouTube video transcript and generate structured notes using Claude or Groq."""
     settings = get_settings()
 
-    prompt = f"""Process this YouTube video transcript and return ONLY valid JSON:
+    prompt = f"""Analyze this YouTube video transcript thoroughly and return ONLY valid JSON:
 {{
-  "title": "video title",
-  "summary": "comprehensive summary",
-  "key_points": ["point 1", "point 2"],
-  "notes": "structured notes",
-  "topics": ["topic1"],
-  "mermaid_diagram": "graph TD\\n  A[Start] --> B[End]",
-  "exam_questions": ["question 1"],
-  "action_items": [],
-  "reminders": []
+  "title": "A descriptive, specific title for this video (not just the channel name)",
+
+  "summary": "A comprehensive 5-8 sentence summary covering the main thesis, key arguments, important conclusions, and practical implications of the video.",
+
+  "key_points": [
+    "8-15 key points. Each point should be a complete sentence (15-30 words) that captures a distinct insight or takeaway."
+  ],
+
+  "notes": "COMPREHENSIVE structured notes using rich markdown. REQUIREMENTS: (1) Use ## headings to organize by topic/section, (2) Use **bold** for key terms and definitions, (3) Include bullet points with detailed explanations, (4) Add sub-bullets for examples and evidence, (5) Include relevant facts, data, quotes mentioned, (6) Minimum 500 words — proportional to video length. (7) End with a '## Key Takeaways' section.",
+
+  "topics": ["List 3-8 specific topics/concepts covered"],
+
+  "mermaid_diagram": "Create a meaningful mermaid diagram visualizing the key concepts or process flow. Use descriptive labels. Example: graph TD\\n  A[Main Topic] --> B[Concept 1]\\n  A --> C[Concept 2]",
+
+  "exam_questions": [
+    "Generate 5-10 exam-worthy questions at varying difficulty levels, specific to the content."
+  ],
+
+  "action_items": [{{"task": "Specific actionable task", "due": null, "priority": "medium"}}],
+
+  "reminders": [{{"text": "Follow-up items", "when": null}}]
 }}
 
+IMPORTANT: The "notes" field must be thorough and detailed. Do NOT produce shallow one-liner notes.
+
 URL: {url}
-Transcript: {transcript[:4000]}
+Transcript: {transcript[:8000]}
 
 Return ONLY the JSON."""
 
     if settings.ai_provider == "groq" or (not api_key and settings.groq_api_key):
-        response_text = _call_groq(prompt, is_json=True)
+        response_text = _call_groq(
+            prompt,
+            is_json=True,
+            max_tokens=6000,
+            system_message=_NOTES_SYSTEM,
+        )
     else:
         client = _create_client(api_key)
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=2000,
+            max_tokens=6000,
+            system=_NOTES_SYSTEM,
             messages=[{"role": "user", "content": prompt}],
         )
         response_text = response.content[0].text
@@ -228,35 +293,51 @@ def generate_flashcards(
     if topics:
         topics_hint = f"\nKnown topics: {', '.join(topics)}"
 
-    prompt = f"""You are an expert educator. Create 8-12 study flashcards from the following lecture content.
+    prompt = f"""You are an expert educator creating study flashcards for university students. Create 10-15 high-quality study flashcards from the following lecture content.
 
-Each flashcard should have:
-- "topic": A concise generalized topic heading (3-8 words) for the FRONT of the card
-- "content": A clear, detailed 2-4 sentence explanation for the BACK of the card that dives deep into the topic
+Each flashcard MUST have:
+- "topic": A concise, specific topic heading (3-8 words) for the FRONT of the card
+- "content": A thorough 4-6 sentence explanation for the BACK of the card that includes:
+  * A clear **definition** or explanation of the concept
+  * **Why it matters** — its significance or real-world relevance
+  * A **concrete example** or analogy to aid understanding
+  * How it **connects** to other topics in the lecture (if applicable)
 - "difficulty": One of "easy", "medium", or "hard"
 
 Title: {note_title}{topics_hint}
 
 Content:
-{transcript[:6000]}
+{transcript[:8000]}
 
 Return ONLY a valid JSON object with this structure:
 {{
   "flashcards": [
-    {{"topic": "Topic Name", "content": "Detailed explanation...", "difficulty": "medium"}},
+    {{"topic": "Topic Name", "content": "Detailed multi-sentence explanation with definition, example, and significance...", "difficulty": "medium"}},
     ...
   ]
 }}
 
-Generate diverse flashcards covering ALL major concepts. Return ONLY the JSON."""
+RULES:
+- Generate 10-15 flashcards covering ALL major concepts from the content.
+- Each card's content must be substantial (4-6 sentences minimum). NO one-liner backs.
+- Vary difficulty: include easy recall, medium understanding, and hard application cards.
+- Be specific — use real terms, names, and data from the lecture.
+
+Return ONLY the JSON."""
 
     if settings.ai_provider == "groq" or (not api_key and settings.groq_api_key):
-        response_text = _call_groq(prompt, is_json=True)
+        response_text = _call_groq(
+            prompt,
+            is_json=True,
+            max_tokens=5000,
+            system_message="You are an expert educator who creates comprehensive, detailed study flashcards.",
+        )
     else:
         client = _create_client(api_key)
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=3000,
+            max_tokens=5000,
+            system="You are an expert educator who creates comprehensive, detailed study flashcards.",
             messages=[{"role": "user", "content": prompt}],
         )
         response_text = response.content[0].text

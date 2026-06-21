@@ -52,23 +52,23 @@ export default function NoteDetailPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
       </div>
     )
   }
 
   if (!note) {
     return (
-      <div className="min-h-screen bg-[#09090b] px-6 py-12 max-w-2xl mx-auto">
+      <div className="min-h-screen bg-background px-6 py-12 max-w-2xl mx-auto">
         <Link
           href="/notes"
-          className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors mb-8"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Notes
         </Link>
-        <div className="text-center py-20 text-zinc-600">
+        <div className="text-center py-20 text-muted-foreground">
           <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-30" />
           <p>Note not found.</p>
         </div>
@@ -96,11 +96,11 @@ export default function NoteDetailPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#09090b] px-6 py-12 max-w-2xl mx-auto">
+    <div className="min-h-screen bg-background px-6 py-12 max-w-2xl mx-auto">
       {/* Back link */}
       <Link
         href="/notes"
-        className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors mb-8"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Notes
@@ -109,7 +109,7 @@ export default function NoteDetailPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h1 className="text-3xl font-bold text-zinc-100">{note.title}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{note.title}</h1>
           <span
             className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${sourceColor(note.source_type)}`}
           >
@@ -117,7 +117,7 @@ export default function NoteDetailPage() {
             {note.source_type}
           </span>
         </div>
-        <p className="text-zinc-500 text-sm leading-relaxed mb-4">
+        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
           {note.summary}
         </p>
         {note.topics && note.topics.length > 0 && (
@@ -125,7 +125,7 @@ export default function NoteDetailPage() {
             {note.topics.map((t) => (
               <span
                 key={t}
-                className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-300 text-xs"
+                className="px-3 py-1 rounded-full bg-muted text-card-foreground text-xs"
               >
                 {t}
               </span>
@@ -145,7 +145,7 @@ export default function NoteDetailPage() {
         )}
 
         {/* Study Actions */}
-        <div className="flex flex-wrap gap-2.5 mt-4 pt-4 border-t border-zinc-900">
+        <div className="flex flex-wrap gap-2.5 mt-4 pt-4 border-t border-border">
           <Link
             href={`/flashcards/${note.id}`}
             className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 rounded-xl text-xs font-medium transition-all"
@@ -164,13 +164,13 @@ export default function NoteDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 p-1 rounded-xl bg-zinc-900 border border-zinc-800">
+      <div className="flex gap-1 mb-6 p-1 rounded-xl bg-card border border-border">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center
-              ${activeTab === tab.key ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+              ${activeTab === tab.key ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
             <tab.icon className="w-4 h-4" />
             {tab.label}
@@ -184,13 +184,13 @@ export default function NoteDetailPage() {
           <>
             {/* Key Points */}
             {note.key_points && note.key_points.length > 0 && (
-              <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
+              <div className="p-5 rounded-2xl bg-card border border-border">
                 <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
                   Key Points
                 </h3>
                 <ul className="flex flex-col gap-2">
                   {note.key_points.map((p, i) => (
-                    <li key={i} className="flex gap-3 text-zinc-300 text-sm">
+                    <li key={i} className="flex gap-3 text-card-foreground text-sm">
                       <span className="text-blue-400 font-mono">
                         {String(i + 1).padStart(2, "0")}
                       </span>
@@ -202,11 +202,11 @@ export default function NoteDetailPage() {
             )}
 
             {/* Structured Notes */}
-            <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
+            <div className="p-5 rounded-2xl bg-card border border-border">
               <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
                 Structured Notes
               </h3>
-              <div className="text-zinc-300 text-sm leading-relaxed prose prose-invert prose-sm max-w-none">
+              <div className="text-card-foreground text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert">
                 <ReactMarkdown>{note.notes}</ReactMarkdown>
               </div>
             </div>
@@ -214,25 +214,25 @@ export default function NoteDetailPage() {
         )}
 
         {activeTab === "transcript" && (
-          <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
+          <div className="p-5 rounded-2xl bg-card border border-border">
             <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
               Transcript
             </h3>
-            <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">
+            <p className="text-card-foreground text-sm leading-relaxed whitespace-pre-wrap">
               {note.transcript || "No transcript available."}
             </p>
           </div>
         )}
 
         {activeTab === "questions" && (
-          <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
+          <div className="p-5 rounded-2xl bg-card border border-border">
             <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
               Exam Questions
             </h3>
             {note.exam_questions && note.exam_questions.length > 0 ? (
               <ul className="flex flex-col gap-3">
                 {note.exam_questions.map((q, i) => (
-                  <li key={i} className="flex gap-3 text-zinc-300 text-sm">
+                  <li key={i} className="flex gap-3 text-card-foreground text-sm">
                     <span className="text-purple-400 font-mono flex-shrink-0">
                       Q{String(i + 1).padStart(2, "0")}
                     </span>
@@ -241,7 +241,7 @@ export default function NoteDetailPage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-zinc-500 text-sm">No exam questions generated.</p>
+              <p className="text-muted-foreground text-sm">No exam questions generated.</p>
             )}
           </div>
         )}
@@ -249,7 +249,7 @@ export default function NoteDetailPage() {
         {activeTab === "actions" && (
           <>
             {/* Action Items */}
-            <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
+            <div className="p-5 rounded-2xl bg-card border border-border">
               <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
                 Action Items
               </h3>
@@ -258,7 +258,7 @@ export default function NoteDetailPage() {
                   {note.action_items.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-3 text-zinc-300 text-sm"
+                      className="flex items-start gap-3 text-card-foreground text-sm"
                     >
                       <ListChecks className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                       <div>
@@ -270,7 +270,7 @@ export default function NoteDetailPage() {
                                 ? "bg-red-400/10 text-red-400"
                                 : item.priority === "medium"
                                   ? "bg-yellow-400/10 text-yellow-400"
-                                  : "bg-zinc-700 text-zinc-400"
+                                  : "bg-muted text-muted-foreground"
                             }`}
                           >
                             {item.priority}
@@ -281,13 +281,13 @@ export default function NoteDetailPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-zinc-500 text-sm">No action items.</p>
+                <p className="text-muted-foreground text-sm">No action items.</p>
               )}
             </div>
 
             {/* Reminders */}
             {note.reminders && note.reminders.length > 0 && (
-              <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
+              <div className="p-5 rounded-2xl bg-card border border-border">
                 <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">
                   Reminders
                 </h3>
@@ -295,7 +295,7 @@ export default function NoteDetailPage() {
                   {note.reminders.map((r, i) => (
                     <li
                       key={i}
-                      className="flex items-center gap-3 text-zinc-300 text-sm"
+                      className="flex items-center gap-3 text-card-foreground text-sm"
                     >
                       <Bell className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                       {r.text}

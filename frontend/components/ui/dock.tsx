@@ -26,6 +26,9 @@ const dockItems = [
   { icon: Search, label: "Search", href: "/search" },
 ]
 
+import { Sun, Moon } from "lucide-react"
+import { useTheme } from "@/components/theme-provider"
+
 const DockIconButton = ({ icon: Icon, label, href, active }: {
   icon: React.ElementType
   label: string
@@ -41,26 +44,50 @@ const DockIconButton = ({ icon: Icon, label, href, active }: {
         href={href}
         className={cn(
           "relative group flex flex-col items-center gap-1 p-3 rounded-xl transition-colors",
-          active ? "bg-white/10" : "hover:bg-white/5"
+          active ? "bg-muted text-foreground" : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
         )}
       >
         <Icon className={cn(
-          "w-5 h-5",
-          active ? "text-blue-400" : "text-zinc-400 group-hover:text-zinc-200"
+          "w-5 h-5 transition-colors",
+          active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground group-hover:text-foreground"
         )} />
         <span className={cn(
-          "text-[10px] font-medium",
-          active ? "text-blue-400" : "text-zinc-500 group-hover:text-zinc-300"
+          "text-[10px] font-medium transition-colors",
+          active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground/80 group-hover:text-foreground"
         )}>
           {label}
         </span>
         {active && (
           <motion.div
             layoutId="dock-active"
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-400"
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500 dark:bg-blue-400"
           />
         )}
       </Link>
+    </motion.div>
+  )
+}
+
+const DockThemeToggle = () => {
+  const { resolvedTheme, toggleTheme } = useTheme()
+  const Icon = resolvedTheme === "dark" ? Sun : Moon
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.15, y: -4 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <button
+        onClick={toggleTheme}
+        className="relative group flex flex-col items-center gap-1 p-3 rounded-xl transition-colors hover:bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer"
+        aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+        title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+      >
+        <Icon className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <span className="text-[10px] font-medium text-muted-foreground/80 group-hover:text-foreground transition-colors">
+          Theme
+        </span>
+      </button>
     </motion.div>
   )
 }
@@ -77,9 +104,8 @@ const MemoriaDock = () => {
         className={cn(
           "pointer-events-auto",
           "flex items-center gap-1 px-3 py-2 rounded-2xl",
-          "bg-zinc-900/80 backdrop-blur-xl",
-          "border border-zinc-800/80",
-          "shadow-xl shadow-black/40"
+          "bg-card/85 backdrop-blur-xl border border-border",
+          "shadow-xl shadow-black/10 dark:shadow-black/40"
         )}
       >
         {dockItems.map((item) => (
@@ -89,6 +115,8 @@ const MemoriaDock = () => {
             active={pathname === item.href}
           />
         ))}
+        <div className="w-px h-6 bg-border mx-1 self-center" />
+        <DockThemeToggle />
       </motion.div>
     </div>
   )

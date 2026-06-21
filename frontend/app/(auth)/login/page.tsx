@@ -33,16 +33,16 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-zinc-100 text-center mb-2">
+      <h1 className="text-2xl font-bold text-foreground text-center mb-2">
         Welcome back
       </h1>
-      <p className="text-zinc-500 text-sm text-center mb-8">
+      <p className="text-muted-foreground text-sm text-center mb-8">
         Sign in to your Memoria account
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
@@ -50,7 +50,7 @@ export default function LoginPage() {
         <div>
           <label
             htmlFor="login-email"
-            className="block text-zinc-400 text-sm mb-1.5"
+            className="block text-muted-foreground text-sm mb-1.5"
           >
             Email
           </label>
@@ -61,14 +61,14 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 text-sm"
+            className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-border/80 text-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="login-password"
-            className="block text-zinc-400 text-sm mb-1.5"
+            className="block text-muted-foreground text-sm mb-1.5"
           >
             Password
           </label>
@@ -80,14 +80,14 @@ export default function LoginPage() {
             placeholder="••••••••"
             required
             minLength={6}
-            className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 text-sm"
+            className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-border/80 text-sm"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading || !email || !password}
-          className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 mt-2"
+          className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 mt-2 shadow-sm shadow-blue-600/10"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -98,11 +98,11 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="text-zinc-500 text-sm text-center mt-6">
+      <p className="text-muted-foreground text-sm text-center mt-6">
         Don&apos;t have an account?{" "}
         <Link
           href="/signup"
-          className="text-blue-400 hover:text-blue-300 transition-colors"
+          className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors font-medium"
         >
           Sign up
         </Link>
