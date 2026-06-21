@@ -1,14 +1,25 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Send, Loader2, Brain } from "lucide-react"
+import { useAuth } from "@/components/auth/auth-provider"
+import { apiFetch } from "@/lib/api"
 
 type Message = { role: "user" | "assistant"; content: string }
 
 export default function AskPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, authLoading, router])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -21,17 +32,23 @@ export default function AskPage() {
     setMessages(m => [...m, { role: "user", content: q }])
     setLoading(true)
     try {
-      const res = await fetch("http://localhost:8000/api/ask", {
+      const data = await apiFetch<{ answer: string }>("/api/ask", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, user_id: "user_demo" })
+        body: JSON.stringify({ question: q })
       })
-      const data = await res.json()
       setMessages(m => [...m, { role: "assistant", content: data.answer }])
     } catch {
       setMessages(m => [...m, { role: "assistant", content: "Error connecting to backend." }])
     }
     setLoading(false)
+  }
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      </div>
+    )
   }
 
   return (

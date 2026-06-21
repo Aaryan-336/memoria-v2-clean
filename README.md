@@ -1,121 +1,106 @@
 # Memoria V2
 
-Memoria V2 is a clean and modern memory-based web application designed to help users store, organize, and revisit important information in one place. The project focuses on simplicity, usability, and a smooth user experience.
+**AI-Powered Lecture Intelligence Platform**
+
+Transform lectures and educational content from any source into personalized learning experiences. Memoria helps students convert lecture recordings, YouTube videos, slides, PDFs, and notes into structured knowledge that is easier to understand, revise, and retain.
 
 ## 🚀 Features
 
-- Create and manage personal memories
-- Clean and responsive user interface
-- Organized project structure
-- Fast and lightweight performance
-- Easy to customize and extend
-- Modern frontend design
+### Currently Implemented
+- 🎙️ **Live Audio Recording** — Real-time browser transcription via Web Speech API
+- 📺 **YouTube Import** — Paste a URL, extract transcript, generate AI notes
+- 📝 **AI Note Generation** — Claude Sonnet-powered structured notes, summaries, key points
+- 💬 **Ask AI** — Chat Q&A against your saved notes
+- 🔍 **Search** — Full-text search across all notes
+- 📚 **Notes Library** — Browse, organize, and view saved notes
+
+### Planned (v2 Roadmap)
+- 🔐 Authentication (Supabase Auth)
+- 🧠 Semantic search (Voyage AI + FAISS)
+- 🗂️ RAG-powered chat with source citations
+- 📇 Flashcard generation
+- ❓ Quiz generation
+- ⚡ Redis caching
 
 ## 🛠️ Tech Stack
 
-- React.js
-- JavaScript
-- HTML5
-- CSS3
-- Node.js
-- npm
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 · Next.js 16 · TypeScript · Tailwind CSS v4 · shadcn/ui |
+| Backend | FastAPI · Pydantic · Python |
+| Database | Supabase PostgreSQL |
+| AI | Claude Sonnet · Web Speech API |
+| Deployment | Vercel (frontend) · Render (backend) |
 
 ## 📂 Project Structure
 
-```bash
+```
 memoria-v2-clean/
-│
-├── public/
-├── src/
-│   ├── components/
-│   ├── assets/
-│   ├── App.jsx
-│   └── main.jsx
-│
-├── package.json
+├── frontend/
+│   ├── app/
+│   │   ├── layout.tsx          # Root layout (dark theme, dock nav)
+│   │   ├── page.tsx            # Dashboard
+│   │   ├── record/page.tsx     # Live audio recording
+│   │   ├── youtube/page.tsx    # YouTube import
+│   │   ├── notes/
+│   │   │   ├── page.tsx        # Notes library
+│   │   │   └── [id]/page.tsx   # Individual note view
+│   │   ├── ask/page.tsx        # AI chat
+│   │   └── search/page.tsx     # Search
+│   ├── components/ui/          # shadcn + custom components
+│   ├── lib/
+│   │   ├── api.ts              # API client config
+│   │   ├── types.ts            # Shared TypeScript types
+│   │   └── utils.ts            # Utilities
+│   └── package.json
+├── backend/
+│   ├── main.py                 # FastAPI app + routes
+│   ├── ai.py                   # Claude AI integration
+│   ├── database.py             # Supabase client
+│   ├── requirements.txt
+│   ├── .env                    # Secrets (not committed)
+│   └── .env.example            # Template for env vars
+├── docs/                       # Architecture & design docs
 └── README.md
 ```
 
-## ⚙️ Installation
+## ⚙️ Setup
 
-Clone the repository:
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- Anthropic API key ([get one here](https://console.anthropic.com/settings/keys))
+- Supabase project ([create one here](https://supabase.com))
+
+### Backend
 
 ```bash
-git clone https://github.com/Aaryan-336/memoria-v2-clean.git
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env with your real API keys
+uvicorn main:app --reload
 ```
 
-Navigate to the project folder:
+### Frontend
 
 ```bash
-cd memoria-v2-clean
-```
-
-Install dependencies:
-
-```bash
+cd frontend
 npm install
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-Open the app in your browser:
-
-```bash
-http://localhost:5173
-```
-
-## 🎯 Usage
-
-1. Open the application.
-2. Add a new memory or note.
-3. View, manage, and organize saved memories.
-4. Use the clean interface to quickly access stored information.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📸 Screenshots
 
-Add screenshots of your project here:
-
-```md
-![Home Page](./screenshots/home.png)
-```
-
-## 🔮 Future Enhancements
-
-- User authentication
-- Cloud database integration
-- Search and filter functionality
-- Edit and delete memories
-- Dark mode
-- Mobile app version
+> Coming soon
 
 ## 🤝 Contributing
 
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a new branch:
-
-```bash
-git checkout -b feature-name
-```
-
-3. Commit your changes:
-
-```bash
-git commit -m "Add feature"
-```
-
-4. Push to the branch:
-
-```bash
-git push origin feature-name
-```
-
-5. Open a pull request.
+Contributions are welcome. See `docs/rules.md` for development guidelines.
 
 ## 📄 License
 
@@ -123,10 +108,4 @@ This project is open-source and available under the MIT License.
 
 ## 👨‍💻 Author
 
-**Aaryan Khanna**
-
-GitHub: [Aaryan-336](https://github.com/Aaryan-336)
-
-## ⭐ Support
-
-If you like this project, consider giving it a star on GitHub.
+**Aaryan Khanna** — [GitHub](https://github.com/Aaryan-336)

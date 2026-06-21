@@ -1,30 +1,46 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { PlayCircle, Loader2, CheckCircle } from "lucide-react"
+import { useAuth } from "@/components/auth/auth-provider"
+import { apiFetch } from "@/lib/api"
 
 export default function YouTubePage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, authLoading, router])
 
   const process = async () => {
     if (!url) return
     setLoading(true)
     setError("")
     try {
-      const res = await fetch("http://localhost:8000/api/youtube", {
+      const data = await apiFetch<any>("/api/youtube", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, user_id: "user_demo" })
+        body: JSON.stringify({ url })
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.detail)
       setResult(data)
     } catch (e: any) {
       setError(e.message || "Failed to process video")
     }
     setLoading(false)
+  }
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      </div>
+    )
   }
 
   return (

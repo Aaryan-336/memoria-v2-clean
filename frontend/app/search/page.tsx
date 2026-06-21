@@ -1,26 +1,44 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Search, Loader2, FileText } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "@/components/auth/auth-provider"
+import { apiFetch } from "@/lib/api"
 
 export default function SearchPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, authLoading, router])
 
   const search = async () => {
     if (!query.trim()) return
     setLoading(true)
     setSearched(true)
     try {
-      const res = await fetch(`http://localhost:8000/api/search?q=${encodeURIComponent(query)}&user_id=user_demo`)
-      const data = await res.json()
+      const data = await apiFetch<any>(`/api/search?q=${encodeURIComponent(query)}`)
       setResults(data.results || [])
     } catch {
       setResults([])
     }
     setLoading(false)
+  }
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      </div>
+    )
   }
 
   return (

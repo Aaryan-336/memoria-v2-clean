@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MemoriaDock } from "@/components/ui/dock";
+import { AuthProvider } from "@/components/auth/auth-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,8 +30,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-[#09090b] text-zinc-100">
-        <main className="flex-1 pb-28">{children}</main>
-        <MemoriaDock />
+        <AuthProvider>
+          <main className="flex-1 pb-28">{children}</main>
+          <MemoriaDock />
+        </AuthProvider>
       </body>
     </html>
   );
