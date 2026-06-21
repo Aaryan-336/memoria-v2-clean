@@ -336,12 +336,12 @@ export default function FlashcardNotePage() {
 
               {/* 3D Flippable card wrapper */}
               <div
-                className="w-full h-[380px] cursor-pointer"
+                className="w-full h-auto cursor-pointer"
                 style={{ perspective: "1000px" }}
                 onClick={handleFlip}
               >
                 <div
-                  className="relative w-full h-full transition-transform duration-600 ease-in-out"
+                  className="relative w-full h-auto transition-transform duration-600 ease-in-out"
                   style={{
                     transformStyle: "preserve-3d",
                     transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -375,7 +375,7 @@ export default function FlashcardNotePage() {
 
                   {/* Back face */}
                   <div
-                    className="absolute inset-0 rounded-3xl bg-card border border-border p-8 flex flex-col justify-between shadow-2xl"
+                    className="relative w-full min-h-[380px] rounded-3xl bg-card border border-border p-8 flex flex-col justify-between shadow-2xl"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
@@ -390,7 +390,7 @@ export default function FlashcardNotePage() {
                         >
                           {flashcards[activeCardIdx].difficulty}
                         </span>
-                        <CheckCircle2 className="w-5 h-5 text-emerald-550 dark:text-emerald-400" />
+                        <CheckCircle2 className="w-5 h-5 text-emerald-555 dark:text-emerald-400" />
                       </div>
                       <h4 className="text-muted-foreground font-bold text-xs uppercase tracking-wider mb-2">
                         {flashcards[activeCardIdx].topic}
