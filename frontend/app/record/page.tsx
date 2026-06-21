@@ -1,39 +1,107 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Mic, Square, Loader2, CheckCircle } from "lucide-react"
+import { useAuth } from "@/components/auth/auth-provider"
+import { useRouter } from "next/navigation"
+import { apiFetch } from "@/lib/api"
 
 export default function RecordPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [recording, setRecording] = useState(false)
   const [transcript, setTranscript] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [timer, setTimer] = useState(0)
-  const mediaRef = useRef<MediaRecorder | null>(null)
-  const intervalRef = useRef<any>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const recognitionRef = useRef<any>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const transcriptRef = useRef("") // accumulate interim+final parts
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, authLoading, router])
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      stopRecording()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const startRecording = async () => {
+    setTranscript("")
+    transcriptRef.current = ""
+    setResult(null)
+    setTimer(0)
+
+    // --- Real-time speech recognition ---
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition()
+      recognition.lang = "en-US"
+      recognition.continuous = true
+      recognition.interimResults = true
+
+      recognition.onresult = (event: any) => {
+        let finalSoFar = ""
+        let interim = ""
+        for (let i = 0; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalSoFar += event.results[i][0].transcript + " "
+          } else {
+            interim += event.results[i][0].transcript
+          }
+        }
+        transcriptRef.current = finalSoFar
+        setTranscript((finalSoFar + interim).trim())
+      }
+
+      recognition.onerror = (e: any) => {
+        console.warn("Speech recognition error:", e.error)
+      }
+
+      recognitionRef.current = recognition
+      recognition.start()
+    } else {
+      // Fallback: browser doesn't support Web Speech API
+      setTranscript("(Your browser doesn't support live transcription. Speak and then generate notes.)")
+    }
+
+    // --- Keep mic stream open so browser shows recording indicator ---
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mr = new MediaRecorder(stream)
-      mediaRef.current = mr
-      mr.start()
-      setRecording(true)
-      setTimer(0)
-      intervalRef.current = setInterval(() => setTimer(t => t + 1), 1000)
-      // Demo transcript after 3s
-      setTimeout(() => {
-        setTranscript("Machine learning is a subset of artificial intelligence that enables systems to learn from data. Neural networks are inspired by the human brain and consist of layers of interconnected nodes. Deep learning uses multiple layers to extract features automatically. Key algorithms include gradient descent, backpropagation, and attention mechanisms.")
-      }, 3000)
+      streamRef.current = stream
     } catch {
-      setTranscript("Microphone access denied. Using demo transcript instead.")
-      setRecording(true)
-      intervalRef.current = setInterval(() => setTimer(t => t + 1), 1000)
+      // mic denied — recognition may still work via its own permission
     }
+
+    setRecording(true)
+    intervalRef.current = setInterval(() => setTimer(t => t + 1), 1000)
   }
 
   const stopRecording = () => {
-    mediaRef.current?.stop()
-    clearInterval(intervalRef.current)
+    // Stop speech recognition
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current = null
+    }
+    // Stop mic stream tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+    // Stop timer
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
     setRecording(false)
   }
 
@@ -41,20 +109,26 @@ export default function RecordPage() {
     if (!transcript) return
     setLoading(true)
     try {
-      const res = await fetch("http://localhost:8000/api/generate-notes", {
+      const data = await apiFetch<any>("/api/generate-notes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript, user_id: "user_demo", source_type: "audio" })
+        body: JSON.stringify({ transcript, source_type: "audio" })
       })
-      const data = await res.json()
       setResult(data)
-    } catch (e) {
-      alert("Error connecting to backend")
+    } catch (e: any) {
+      alert("Error generating notes: " + (e.message || e))
     }
     setLoading(false)
   }
 
   const fmt = (s: number) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#09090b] px-6 py-12 max-w-2xl mx-auto">

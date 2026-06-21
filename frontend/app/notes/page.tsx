@@ -1,23 +1,43 @@
 "use client"
 import { useEffect, useState } from "react"
-import { BookOpen, Mic, PlayCircle, FileText, Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { BookOpen, Mic, PlayCircle, FileText, Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "@/components/auth/auth-provider"
+import { apiFetch } from "@/lib/api"
 
 export default function NotesPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [notes, setNotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/notes/user_demo")
-      .then(r => r.json())
-      .then(d => { setNotes(d.notes || []); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
+    if (!authLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (user) {
+      apiFetch<{ notes: any[] }>("/api/notes")
+        .then(d => { setNotes(d.notes || []); setLoading(false) })
+        .catch(() => setLoading(false))
+    }
+  }, [user])
 
   const sourceIcon = (type: string) => {
     if (type === "audio") return <Mic className="w-3 h-3" />
     if (type === "youtube") return <PlayCircle className="w-3 h-3" />
     return <FileText className="w-3 h-3" />
+  }
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      </div>
+    )
   }
 
   const sourceColor = (type: string) => {
@@ -30,6 +50,9 @@ export default function NotesPage() {
     <div className="min-h-screen bg-[#09090b] px-6 py-12 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-10">
         <div>
+          <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm mb-4 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to dashboard
+          </Link>
           <h1 className="text-3xl font-bold text-zinc-100 mb-2">Notes Library</h1>
           <p className="text-zinc-500">{notes.length} notes saved</p>
         </div>

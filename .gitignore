@@ -3,6 +3,7 @@
 # Environment / secrets
 .env
 .env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -14,6 +15,11 @@ __pycache__/
 # Virtual environments
 venv/
 .venv/
+backend/venv/
+backend/bin/
+backend/lib/
+backend/include/
+backend/pyvenv.cfg
 
 # Node / frontend
 node_modules/
@@ -21,3 +27,12 @@ dist/
 build/
 .next/
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db

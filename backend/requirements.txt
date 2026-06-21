@@ -2,9 +2,12 @@ fastapi
 uvicorn[standard]
 python-multipart
 pydantic
+pydantic-settings
 anthropic
 httpx
 python-dotenv
 supabase
 numpy
 youtube-transcript-api
+python-jose[cryptography]
+pg8000

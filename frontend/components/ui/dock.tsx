@@ -9,6 +9,8 @@ import {
   MessageSquare,
   Search,
   LayoutDashboard,
+  Layers,
+  Timer,
 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
@@ -18,6 +20,8 @@ const dockItems = [
   { icon: Mic, label: "Record", href: "/record" },
   { icon: PlayCircle, label: "YouTube", href: "/youtube" },
   { icon: BookOpen, label: "Notes", href: "/notes" },
+  { icon: Layers, label: "Cards", href: "/flashcards" },
+  { icon: Timer, label: "Quiz", href: "/quiz" },
   { icon: MessageSquare, label: "Ask AI", href: "/ask" },
   { icon: Search, label: "Search", href: "/search" },
 ]
