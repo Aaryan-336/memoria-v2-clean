@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MemoriaDock } from "@/components/ui/dock";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,13 +29,17 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#09090b] text-zinc-100">
-        <AuthProvider>
-          <main className="flex-1 pb-28">{children}</main>
-          <MemoriaDock />
-        </AuthProvider>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ThemeProvider>
+          <AuthProvider>
+            <main className="flex-1 pb-28">{children}</main>
+            <MemoriaDock />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+

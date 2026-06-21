@@ -32,9 +32,9 @@ function FlipCard({
   }
 
   const difficultyLabel: Record<string, string> = {
-    easy: "bg-emerald-500/15 text-emerald-400",
-    medium: "bg-blue-500/15 text-blue-400",
-    hard: "bg-red-500/15 text-red-400",
+    easy: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    medium: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+    hard: "bg-red-500/15 text-red-600 dark:text-red-400",
   }
 
   const colors = difficultyColor[card.difficulty] || difficultyColor.medium
@@ -66,17 +66,17 @@ function FlipCard({
             >
               {card.difficulty}
             </span>
-            <Layers className="w-4 h-4 text-zinc-500" />
+            <Layers className="w-4 h-4 text-muted-foreground" />
           </div>
-          <h3 className="text-zinc-100 font-bold text-lg leading-snug mb-3">
+          <h3 className="text-foreground font-bold text-lg leading-snug mb-3">
             {card.topic}
           </h3>
-          <p className="text-zinc-500 text-xs">Tap to reveal →</p>
+          <p className="text-muted-foreground text-xs font-medium">Tap to reveal →</p>
         </div>
 
         {/* ── Back Face ───────────────────────────────────── */}
         <div
-          className="absolute inset-0 w-full rounded-2xl bg-zinc-900 border border-zinc-700 p-6 overflow-auto"
+          className="absolute inset-0 w-full rounded-2xl bg-card border border-border p-6 overflow-auto shadow-lg"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
@@ -88,13 +88,13 @@ function FlipCard({
             >
               {card.difficulty}
             </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <h3 className="text-zinc-300 font-semibold text-sm mb-3 uppercase tracking-wider">
+          <h3 className="text-muted-foreground font-semibold text-sm mb-3 uppercase tracking-wider">
             {card.topic}
           </h3>
-          <p className="text-zinc-200 text-sm leading-relaxed">{card.content}</p>
-          <p className="text-zinc-600 text-xs mt-4">Tap to flip back</p>
+          <p className="text-card-foreground text-sm leading-relaxed">{card.content}</p>
+          <p className="text-muted-foreground/60 text-xs mt-4">Tap to flip back</p>
         </div>
       </div>
     </div>
@@ -181,18 +181,18 @@ export default function FlashcardNotePage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] px-6 py-12 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background px-6 py-12 max-w-5xl mx-auto">
       {/* Header */}
       <Link
         href="/flashcards"
-        className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors mb-6"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 font-medium text-sm"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Flashcards
@@ -200,22 +200,22 @@ export default function FlashcardNotePage() {
 
       <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-100 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             {noteTitle || "Flashcards"}
           </h1>
           {totalCount > 0 && (
             <div className="flex items-center gap-3">
-              <span className="text-zinc-500 text-sm">
+              <span className="text-muted-foreground text-sm font-medium">
                 {totalCount} cards
               </span>
-              <span className="text-zinc-700">•</span>
-              <span className="text-amber-400 text-sm font-medium">
+              <span className="text-muted-foreground/30">•</span>
+              <span className="text-amber-500 dark:text-amber-400 text-sm font-medium">
                 {reviewedCount} reviewed
               </span>
               {/* Progress bar */}
-              <div className="w-24 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                  className="h-full bg-amber-500 dark:bg-amber-400 rounded-full transition-all duration-500"
                   style={{
                     width: `${totalCount > 0 ? (reviewedCount / totalCount) * 100 : 0}%`,
                   }}
@@ -228,7 +228,7 @@ export default function FlashcardNotePage() {
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 cursor-pointer shadow-sm shadow-amber-600/10"
         >
           {generating ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -248,16 +248,16 @@ export default function FlashcardNotePage() {
       {/* Loading */}
       {loading && (
         <div className="flex flex-col items-center gap-4 py-20">
-          <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-          <p className="text-zinc-500 text-sm">Loading flashcards…</p>
+          <Loader2 className="w-8 h-8 text-amber-500 dark:text-amber-400 animate-spin" />
+          <p className="text-muted-foreground text-sm font-medium">Loading flashcards…</p>
         </div>
       )}
 
       {/* Generating */}
       {generating && (
         <div className="flex flex-col items-center gap-4 py-20">
-          <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-          <p className="text-zinc-500 text-sm">
+          <Loader2 className="w-8 h-8 text-amber-500 dark:text-amber-400 animate-spin" />
+          <p className="text-muted-foreground text-sm font-medium">
             AI is creating your flashcards…
           </p>
         </div>
@@ -265,14 +265,14 @@ export default function FlashcardNotePage() {
 
       {/* Empty state */}
       {!loading && !generating && flashcards.length === 0 && (
-        <div className="text-center py-20 text-zinc-600">
+        <div className="text-center py-20 text-muted-foreground/60">
           <Layers className="w-12 h-12 mx-auto mb-4 opacity-30" />
           <p className="mb-4">No flashcards yet for this note.</p>
           <button
             onClick={handleGenerate}
-            className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
+            className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-all cursor-pointer inline-flex items-center gap-2 shadow-sm"
           >
-            <Sparkles className="w-4 h-4 inline mr-2" />
+            <Sparkles className="w-4 h-4" />
             Generate Flashcards
           </button>
         </div>

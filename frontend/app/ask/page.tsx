@@ -45,26 +45,26 @@ export default function AskPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-zinc-500 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex flex-col max-w-2xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold text-zinc-100 mb-2">Ask Memory</h1>
-      <p className="text-zinc-500 mb-8">Ask anything about your past notes.</p>
+    <div className="min-h-screen bg-background flex flex-col max-w-2xl mx-auto px-6 py-12">
+      <h1 className="text-3xl font-bold text-foreground mb-2">Ask Memory</h1>
+      <p className="text-muted-foreground mb-8">Ask anything about your past notes.</p>
 
       <div className="flex-1 flex flex-col gap-4 mb-6 min-h-[400px]">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Brain className="w-12 h-12 text-zinc-700" />
-            <p className="text-zinc-600 text-sm">Your notes are ready to be queried.</p>
+            <Brain className="w-12 h-12 text-muted-foreground/40" />
+            <p className="text-muted-foreground text-sm">Your notes are ready to be queried.</p>
             <div className="flex flex-col gap-2 w-full max-w-sm">
               {["What topics have I studied?", "Summarize my recent notes", "What are the key concepts?"].map(q => (
                 <button key={q} onClick={() => { setInput(q); }}
-                  className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 text-sm hover:border-zinc-700 hover:text-zinc-300 transition-all text-left">
+                  className="px-4 py-2 rounded-xl bg-card border border-border text-muted-foreground text-sm hover:border-accent hover:text-foreground transition-all text-left">
                   {q}
                 </button>
               ))}
@@ -76,15 +76,15 @@ export default function AskPage() {
             <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed
               ${m.role === "user"
                 ? "bg-blue-600 text-white rounded-br-sm"
-                : "bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-bl-sm"}`}>
+                : "bg-card border border-border text-card-foreground rounded-bl-sm"}`}>
               {m.content}
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="px-4 py-3 rounded-2xl bg-zinc-900 border border-zinc-800">
-              <Loader2 className="w-4 h-4 text-zinc-500 animate-spin" />
+            <div className="px-4 py-3 rounded-2xl bg-card border border-border">
+              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
             </div>
           </div>
         )}
@@ -95,7 +95,7 @@ export default function AskPage() {
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && send()}
           placeholder="Ask about your notes…"
-          className="flex-1 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 text-sm" />
+          className="flex-1 px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-accent text-sm" />
         <button onClick={send} disabled={loading || !input.trim()}
           className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all disabled:opacity-50">
           <Send className="w-4 h-4" />
