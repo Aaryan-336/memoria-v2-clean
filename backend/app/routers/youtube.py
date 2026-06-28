@@ -15,8 +15,11 @@ except ImportError:
     AnthropicAuthError = None
 
 from app.dependencies import CurrentUser, DatabaseDep, SettingsDep
+from app.middleware.subscription import SubscriptionDep, check_daily_quota, check_memory_limit
 from app.models.schemas import YouTubeRequest
 from app.services.ai_service import process_youtube
+from app.services.subscription_service import get_user_memories_count
+from app.services.usage_service import increment_usage, track_usage_to_db, log_usage_event
 
 router = APIRouter(prefix="/api", tags=["youtube"])
 
@@ -25,10 +28,18 @@ router = APIRouter(prefix="/api", tags=["youtube"])
 async def youtube(
     req: YouTubeRequest,
     current_user: CurrentUser,
+    sub: SubscriptionDep,
     db: DatabaseDep,
     settings: SettingsDep,
 ):
     """Process a YouTube video URL. Requires authentication."""
+    # Check YouTube import quota
+    check_daily_quota(sub, "youtube_imports", "max_youtube_daily")
+
+    # Check memory limit before creating a new note
+    memories_count = get_user_memories_count(db, current_user.user_id)
+    check_memory_limit(sub, memories_count)
+
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
 
@@ -45,7 +56,7 @@ async def youtube(
         if not result:
             raise HTTPException(status_code=500, detail="AI processing failed")
 
-        note = db.table("notes").insert({
+        note_data = {
             "user_id": current_user.user_id,
             "title": result.get("title", "YouTube Note"),
             "transcript": transcript,
@@ -59,7 +70,26 @@ async def youtube(
             "mermaid_diagram": result.get("mermaid_diagram", ""),
             "source_type": "youtube",
             "youtube_url": req.url,
-        }).execute()
+        }
+        if req.workspace_id:
+            note_data["workspace_id"] = req.workspace_id
+
+        try:
+            note = db.table("notes").insert(note_data).execute()
+        except Exception as e:
+            if "workspace_id" in str(e) or "PGRST204" in str(e):
+                print(f"Warning: workspace_id column is missing from notes table. Retrying note creation without workspace scoping. Error: {e}")
+                note_data.pop("workspace_id", None)
+                note = db.table("notes").insert(note_data).execute()
+            else:
+                raise
+
+        # Track usage after successful import
+        increment_usage(current_user.user_id, "youtube_imports")
+        increment_usage(current_user.user_id, "notes_created")
+        track_usage_to_db(db, current_user.user_id, "youtube_imports")
+        track_usage_to_db(db, current_user.user_id, "notes_created")
+        log_usage_event(db, current_user.user_id, "youtube_import", {"url": req.url})
 
         return {"success": True, "note": note.data[0], "ai": result}
     except HTTPException:

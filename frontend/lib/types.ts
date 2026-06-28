@@ -122,3 +122,134 @@ export interface QuizResponse {
   num_questions: number;
   time_per_question: number;
 }
+
+// ─── Subscription Plans ─────────────────────────────────────
+
+export type PlanName = "free" | "pro" | "premium" | "team";
+export type BillingInterval = "monthly" | "yearly";
+export type SubscriptionStatus = "active" | "past_due" | "canceled" | "trialing" | "paused";
+
+export interface Plan {
+  id: string;
+  name: PlanName;
+  display_name: string;
+  description: string | null;
+  price_monthly: number;
+  price_yearly: number;
+  max_memories: number | null;
+  max_storage_mb: number | null;
+  max_ai_queries_daily: number | null;
+  max_workspaces: number | null;
+  max_youtube_daily: number | null;
+  features: Record<string, boolean | number | null>;
+  sort_order: number;
+}
+
+export interface PlanListResponse {
+  plans: Plan[];
+}
+
+export interface UserSubscription {
+  plan: Plan;
+  status: SubscriptionStatus;
+  billing_interval: BillingInterval;
+  current_period_start: string;
+  current_period_end: string;
+  trial_end: string | null;
+  canceled_at: string | null;
+  student_discount: boolean;
+}
+
+// ─── Usage ──────────────────────────────────────────────────
+
+export interface Usage {
+  ai_queries: number;
+  youtube_imports: number;
+  notes_created: number;
+  flashcards_generated: number;
+  quizzes_generated: number;
+  storage_used_mb: number;
+}
+
+export interface UsageLimits {
+  usage: Usage;
+  limits: Plan;
+  memories_count: number;
+}
+
+export interface UsageHistoryItem {
+  date: string;
+  ai_queries: number;
+  youtube_imports: number;
+  notes_created: number;
+}
+
+export interface UsageHistoryResponse {
+  history: UsageHistoryItem[];
+}
+
+// ─── Billing ────────────────────────────────────────────────
+
+export interface CheckoutResponse {
+  checkout_url: string;
+}
+
+export interface PortalResponse {
+  portal_url: string;
+}
+
+export interface PaymentHistoryItem {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface PaymentHistoryResponse {
+  payments: PaymentHistoryItem[];
+}
+
+// ─── Quota Error ────────────────────────────────────────────
+
+export interface QuotaError {
+  error: "quota_exceeded" | "feature_locked" | "memory_limit_reached";
+  message: string;
+  metric?: string;
+  limit?: number;
+  current?: number;
+  feature?: string;
+  plan: PlanName;
+  upgrade_url: string;
+}
+
+
+// ─── Workspaces ──────────────────────────────────────────────
+
+export interface Workspace {
+  id: string;
+  name: string;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkspaceMember {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  user_email: string | null;
+  role: "owner" | "admin" | "editor" | "viewer";
+  created_at: string;
+}
+
+export interface WorkspaceListResponse {
+  workspaces: Workspace[];
+}
+
+export interface MoveNoteResponse {
+  success: boolean;
+  note_id: string;
+  workspace_id: string | null;
+}

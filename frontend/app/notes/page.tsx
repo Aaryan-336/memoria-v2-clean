@@ -1,13 +1,16 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { BookOpen, Mic, PlayCircle, FileText, Loader2, ArrowLeft } from "lucide-react"
+import { BookOpen, Mic, PlayCircle, FileText, Loader2, ArrowLeft, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
 import { apiFetch } from "@/lib/api"
+import { useWorkspace } from "@/lib/workspace"
+import { WorkspaceSwitcher } from "@/components/ui/workspace-switcher"
 
 export default function NotesPage() {
   const { user, loading: authLoading } = useAuth()
+  const { currentWorkspace } = useWorkspace()
   const router = useRouter()
   const [notes, setNotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -20,16 +23,20 @@ export default function NotesPage() {
 
   useEffect(() => {
     if (user) {
-      apiFetch<{ notes: any[] }>("/api/notes")
+      setLoading(true)
+      const url = currentWorkspace 
+        ? `/api/notes?workspace_id=${currentWorkspace.id}`
+        : `/api/notes?workspace_id=personal`
+      apiFetch<{ notes: any[] }>(url)
         .then(d => { setNotes(d.notes || []); setLoading(false) })
         .catch(() => setLoading(false))
     }
-  }, [user])
+  }, [user, currentWorkspace])
 
   const sourceIcon = (type: string) => {
-    if (type === "audio") return <Mic className="w-3 h-3" />
-    if (type === "youtube") return <PlayCircle className="w-3 h-3" />
-    return <FileText className="w-3 h-3" />
+    if (type === "audio") return <Mic className="w-3.5 h-3.5" />
+    if (type === "youtube") return <PlayCircle className="w-3.5 h-3.5" />
+    return <FileText className="w-3.5 h-3.5" />
   }
 
   if (authLoading || !user) {
@@ -41,55 +48,89 @@ export default function NotesPage() {
   }
 
   const sourceColor = (type: string) => {
-    if (type === "audio") return "text-blue-400 bg-blue-400/10"
-    if (type === "youtube") return "text-red-400 bg-red-400/10"
-    return "text-green-400 bg-green-400/10"
+    if (type === "audio") return "bg-card text-[var(--accent-forest)] border-[rgba(45,106,79,0.25)]"
+    if (type === "youtube") return "bg-card text-[#B24C19] border-[rgba(178,76,25,0.25)]"
+    return "bg-card text-[#6C5F8B] border-[rgba(108,95,139,0.25)]"
+  }
+
+  const sourceCardBg = (type: string) => {
+    if (type === "audio") return "bg-[var(--accent-mint)] border-[rgba(45,106,79,0.15)]"
+    if (type === "youtube") return "bg-[var(--accent-peach)] border-[rgba(178,76,25,0.15)]"
+    return "bg-[var(--accent-lavender)] border-[rgba(108,95,139,0.15)]"
   }
 
   return (
-    <div className="min-h-screen bg-background px-6 py-12 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <Link href="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-4 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to dashboard
-          </Link>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Notes Library</h1>
-          <p className="text-muted-foreground">{notes.length} notes saved</p>
+    <div className="min-h-screen bg-background">
+      <div className="memoria-container py-8 lg:py-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 animate-memoria-fade-in">
+          <div>
+            <Link href="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-4 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to dashboard
+            </Link>
+            <h1 className="text-foreground mb-2">Notes Library</h1>
+            <p className="text-muted-foreground">{notes.length} notes saved in this workspace</p>
+          </div>
+          <div className="flex items-center">
+            <WorkspaceSwitcher />
+          </div>
         </div>
-      </div>
 
-      {loading && (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
-        </div>
-      )}
+        {loading && (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+          </div>
+        )}
 
-      {!loading && notes.length === 0 && (
-        <div className="text-center py-20 text-muted-foreground">
-          <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <p>No notes yet. Record audio or import a YouTube video.</p>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3">
-        {notes.map((note: any) => (
-          <Link key={note.id} href={`/notes/${note.id}`}
-            className="p-5 rounded-2xl bg-card border border-border hover:border-accent transition-all group">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className="text-foreground font-semibold group-hover:text-foreground transition-colors">{note.title}</h3>
-              <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${sourceColor(note.source_type)}`}>
-                {sourceIcon(note.source_type)}
-                {note.source_type}
-              </span>
+        {!loading && notes.length === 0 && (
+          <div className="text-center py-20 text-muted-foreground bg-card border border-border rounded-[24px] max-w-xl mx-auto p-8 animate-memoria-fade-in stagger-1 shadow-[var(--shadow-card)]">
+            <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-30" />
+            <h3 className="text-foreground font-semibold mb-2" style={{ fontSize: '1.125rem' }}>No notes yet</h3>
+            <p className="text-muted-foreground text-sm mb-6">Record audio or import a YouTube video to generate study materials.</p>
+            <div className="flex justify-center gap-3">
+              <Link href="/record" className="px-5 py-2.5 bg-[var(--accent-forest)] text-white font-semibold text-xs rounded-full hover:opacity-90 transition-all uppercase tracking-wider">
+                Record Audio
+              </Link>
+              <Link href="/youtube" className="px-5 py-2.5 bg-secondary text-foreground font-semibold text-xs rounded-full hover:bg-secondary/80 transition-colors uppercase tracking-wider">
+                YouTube Import
+              </Link>
             </div>
-            <p className="text-muted-foreground text-sm line-clamp-2 mb-3">{note.summary}</p>
-            <div className="flex flex-wrap gap-2">
-              {(note.topics || []).slice(0, 3).map((t: string) => (
-                <span key={t} className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">{t}</span>
-              ))}
-            </div>
-          </Link>
-        ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {notes.map((note: any, idx: number) => (
+            <Link key={note.id} href={`/notes/${note.id}`}
+              className={`memoria-card group flex flex-col justify-between ${sourceCardBg(note.source_type)} animate-memoria-fade-in stagger-${Math.min(idx + 1, 6)}`}>
+              <div>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <h3 className="text-foreground font-bold text-lg group-hover:text-[var(--accent-forest)] transition-colors line-clamp-1 leading-snug">
+                    {note.title}
+                  </h3>
+                  <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 border ${sourceColor(note.source_type)}`}>
+                    {sourceIcon(note.source_type)}
+                    {note.source_type}
+                  </span>
+                </div>
+                <p className="text-muted-foreground text-sm line-clamp-3 mb-6 leading-relaxed font-medium">
+                  {note.summary}
+                </p>
+              </div>
+              <div className="flex items-center justify-between border-t border-border/40 pt-4 mt-auto">
+                <div className="flex flex-wrap gap-1.5 max-w-[85%]">
+                  {(note.topics || []).slice(0, 3).map((t: string) => (
+                    <span key={t} className="px-2.5 py-0.5 rounded-full bg-card/65 text-foreground text-xs font-semibold border border-border/30">
+                      {t}
+                    </span>
+                  ))}
+                  {(note.topics || []).length === 0 && (
+                    <span className="text-xs text-muted-foreground italic font-medium">No topics</span>
+                  )}
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[var(--accent-forest)] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )

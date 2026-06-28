@@ -2,14 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,83 +37,91 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.667);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.333);
+  --radius-2xl: calc(var(--radius) * 1.667);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.333);
 }
+
+/* ─── Memoria v4 — Warm Editorial Design Tokens ─── */
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Backgrounds */
+  --background: #F7F3EE;
+  --background-secondary: #EDE8E1;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A2E;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A2E;
+
+  /* Text */
+  --foreground: #1A1A2E;
+  --muted: #EDE8E1;
+  --muted-foreground: #595248;
+  --secondary: #EDE8E1;
+  --secondary-foreground: #1A1A2E;
+
+  /* Primary (buttons, strong actions) */
+  --primary: #1A1A2E;
+  --primary-foreground: #F7F3EE;
+
+  /* Accent */
+  --accent: #EDE8E1;
+  --accent-foreground: #1A1A2E;
+  --destructive: #E85D4A;
+
+  /* Borders & Inputs */
+  --border: #E5DDD3;
+  --input: #E5DDD3;
+  --ring: #2D6A4F;
+
+  /* Charts */
+  --chart-1: #2D6A4F;
+  --chart-2: #D4EDDA;
+  --chart-3: #E85D4A;
+  --chart-4: #D4A843;
+  --chart-5: #D6EAF8;
+
+  /* Radius — 20px base */
+  --radius: 1.25rem;
+
+  /* Sidebar tokens (kept for shadcn compatibility, but sidebar not used) */
+  --sidebar: #F7F3EE;
+  --sidebar-foreground: #1A1A2E;
+  --sidebar-primary: #2D6A4F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EDE8E1;
+  --sidebar-accent-foreground: #1A1A2E;
+  --sidebar-border: #E5DDD3;
+  --sidebar-ring: #2D6A4F;
+
+  /* ── Pastel Card Accent Palette ── */
+  --accent-mint: #D4EDDA;
+  --accent-lavender: #E8DFF5;
+  --accent-peach: #FCE4D6;
+  --accent-butter: #FFF3CD;
+  --accent-sky: #D6EAF8;
+
+  /* Interactive accent */
+  --accent-forest: #2D6A4F;
+
+  /* Legacy aliases (for components that still reference old names) */
+  --accent-purple: #E8DFF5;
+  --accent-green: #D4EDDA;
+  --accent-coral: #E85D4A;
+  --accent-yellow: #D4A843;
+  --accent-blue: #D6EAF8;
+
+  /* Shadows — very subtle */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-nav: 0 -2px 20px rgba(0, 0, 0, 0.06);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
+/* ─── Base Styles ─── */
 
 @layer base {
   * {
@@ -123,8 +129,205 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
   }
+
+  /* Typography Scale — Inter */
+  h1 {
+    font-size: 2.25rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+  h2 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+  }
+  h3 {
+    font-size: 1.375rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.75rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+    }
+    h3 {
+      font-size: 1.125rem;
+    }
+  }
+}
+
+/* ─── Layout Utilities ─── */
+
+.memoria-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .memoria-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .memoria-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Memoria Card — standardized card styling */
+.memoria-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: all 200ms ease-out;
+}
+
+.memoria-card:hover {
+  border-color: var(--accent-forest);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-1px);
+}
+
+.memoria-card-static {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* ─── Animations ─── */
+
+@keyframes memoria-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes memoria-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes memoria-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-memoria-fade-in {
+  animation: memoria-fade-in 200ms ease-out both;
+}
+
+.animate-memoria-scale-in {
+  animation: memoria-scale-in 200ms ease-out both;
+}
+
+.animate-memoria-slide-up {
+  animation: memoria-slide-up 300ms ease-out both;
+}
+
+/* Stagger delay helpers */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+
+/* ─── Custom Scrollbar ─── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 999px;
+  opacity: 0.3;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.5;
+}
+
+/* ─── Glass utility (warm cream variant) ─── */
+
+.glass {
+  background: rgba(247, 243, 238, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ─── Pastel Gradient Backgrounds ─── */
+
+.bg-accent-mint-gradient {
+  background: linear-gradient(135deg, rgba(212, 237, 218, 0.4) 0%, rgba(212, 237, 218, 0.1) 100%);
+}
+
+.bg-accent-lavender-gradient {
+  background: linear-gradient(135deg, rgba(232, 223, 245, 0.4) 0%, rgba(232, 223, 245, 0.1) 100%);
+}
+
+.bg-accent-peach-gradient {
+  background: linear-gradient(135deg, rgba(252, 228, 214, 0.4) 0%, rgba(252, 228, 214, 0.1) 100%);
+}
+
+.bg-accent-butter-gradient {
+  background: linear-gradient(135deg, rgba(255, 243, 205, 0.4) 0%, rgba(255, 243, 205, 0.1) 100%);
+}
+
+.bg-accent-sky-gradient {
+  background: linear-gradient(135deg, rgba(214, 234, 248, 0.4) 0%, rgba(214, 234, 248, 0.1) 100%);
+}
+
+/* Legacy gradient alias */
+.bg-accent-purple-gradient {
+  background: linear-gradient(135deg, rgba(232, 223, 245, 0.4) 0%, rgba(232, 223, 245, 0.1) 100%);
+}
+
+.bg-accent-green-gradient {
+  background: linear-gradient(135deg, rgba(212, 237, 218, 0.4) 0%, rgba(212, 237, 218, 0.1) 100%);
+}
+
+.bg-accent-coral-gradient {
+  background: linear-gradient(135deg, rgba(232, 93, 74, 0.12) 0%, rgba(232, 93, 74, 0.03) 100%);
+}
+
+.bg-accent-yellow-gradient {
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.15) 0%, rgba(212, 168, 67, 0.05) 100%);
+}
+
+.bg-accent-blue-gradient {
+  background: linear-gradient(135deg, rgba(214, 234, 248, 0.4) 0%, rgba(214, 234, 248, 0.1) 100%);
 }

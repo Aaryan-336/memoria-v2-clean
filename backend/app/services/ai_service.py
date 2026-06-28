@@ -133,6 +133,9 @@ def process_transcript(
 ) -> dict:
     """Process a transcript and generate structured notes using Claude or Groq."""
     settings = get_settings()
+    is_groq = settings.ai_provider == "groq" or (not api_key and settings.groq_api_key)
+    slice_limit = 12000 if is_groq else 100000
+    sliced_transcript = transcript[:slice_limit]
 
     prompt = f"""Analyze the following lecture transcript thoroughly and return ONLY valid JSON with these exact keys:
 
@@ -145,7 +148,7 @@ def process_transcript(
     "8-15 key points. Each point should be a complete sentence (15-30 words) that captures a distinct insight, concept, or takeaway. Do NOT write vague placeholders like 'point 1'."
   ],
 
-  "notes": "COMPREHENSIVE structured notes in {note_format} format using rich markdown. REQUIREMENTS: (1) Use ## headings to organize by topic/section, (2) Use **bold** for key terms and definitions, (3) Include bullet points with detailed explanations (not one-liners), (4) Add sub-bullets for examples, evidence, or clarifications, (5) Include relevant formulas, dates, names, or data mentioned, (6) Minimum 500 words — the notes should be proportional to the lecture length. A long transcript MUST produce long, detailed notes. (7) End with a brief '## Summary' section that ties everything together.",
+  "notes": "COMPREHENSIVE, highly detailed structured study guide in {note_format} format using rich markdown. REQUIREMENTS: (1) Use ## headings to organize by topic/section, (2) Use **bold** for key terms, definitions, and technical names, (3) Include extensive detailed explanations for each concept rather than brief summaries or one-liners, (4) Add sub-bullets detailing specific examples, implementation details, pros/cons, and mechanics, (5) Include all relevant architectural diagrams, formulas, dates, configurations, or statistics mentioned, (6) Capture technical comparison tables if different options are discussed, (7) Minimum 800 words — the notes must be rich, exhaustive, and cover every technical sub-topic in depth. If any core concept (e.g. REST vs GraphQL vs gRPC) is introduced, detail its definition and structural purpose fully. (8) End with a thorough '## Synthesis & Summary' section.",
 
   "exam_questions": [
     "Generate 5-10 exam-worthy questions at varying difficulty levels. Include factual recall, conceptual understanding, and application/analysis questions. Each question should be specific to the content, not generic."
@@ -167,15 +170,15 @@ IMPORTANT RULES:
 - If the transcript is long, the notes MUST be proportionally long and detailed.
 
 Transcript:
-{transcript}
+{sliced_transcript}
 
 Return ONLY the JSON, nothing else."""
 
-    if settings.ai_provider == "groq" or (not api_key and settings.groq_api_key):
+    if is_groq:
         response_text = _call_groq(
             prompt,
             is_json=True,
-            max_tokens=6000,
+            max_tokens=2000,
             system_message=_NOTES_SYSTEM,
         )
     else:
@@ -194,6 +197,11 @@ Return ONLY the JSON, nothing else."""
 def process_youtube(api_key: str, url: str, transcript: str) -> dict:
     """Process a YouTube video transcript and generate structured notes using Claude or Groq."""
     settings = get_settings()
+    is_groq = settings.ai_provider == "groq" or (not api_key and settings.groq_api_key)
+    
+    # Dynamic context slicing: 12,000 characters for Groq (prevents token & rate limit errors), 100,000 for Claude
+    slice_limit = 12000 if is_groq else 100000
+    sliced_transcript = transcript[:slice_limit]
 
     prompt = f"""Analyze this YouTube video transcript thoroughly and return ONLY valid JSON:
 {{
@@ -205,7 +213,7 @@ def process_youtube(api_key: str, url: str, transcript: str) -> dict:
     "8-15 key points. Each point should be a complete sentence (15-30 words) that captures a distinct insight or takeaway."
   ],
 
-  "notes": "COMPREHENSIVE structured notes using rich markdown. REQUIREMENTS: (1) Use ## headings to organize by topic/section, (2) Use **bold** for key terms and definitions, (3) Include bullet points with detailed explanations, (4) Add sub-bullets for examples and evidence, (5) Include relevant facts, data, quotes mentioned, (6) Minimum 500 words — proportional to video length. (7) End with a '## Key Takeaways' section.",
+  "notes": "COMPREHENSIVE, highly detailed structured study guide using rich markdown. REQUIREMENTS: (1) Use ## headings to organize by topic/section, (2) Use **bold** for key terms, definitions, and technical concepts, (3) Write exhaustive bullet points explaining each concept in detail (no summaries or one-liners), (4) Include concrete examples, system architecture comparisons, advantages, and drawbacks, (5) Extract all numbers, figures, quotes, and structural relationships mentioned, (6) Minimum 800 words — notes must be detailed and cover all sub-sections of the video. If any specific technology or protocol is discussed (e.g. REST, GraphQL, gRPC), provide a complete description of its definition, structure, and use-cases. (7) End with a '## Key Takeaways' section.",
 
   "topics": ["List 3-8 specific topics/concepts covered"],
 
@@ -223,7 +231,7 @@ def process_youtube(api_key: str, url: str, transcript: str) -> dict:
 IMPORTANT: The "notes" field must be thorough and detailed. Do NOT produce shallow one-liner notes.
 
 URL: {url}
-Transcript: {transcript[:8000]}
+Transcript: {sliced_transcript}
 
 Return ONLY the JSON."""
 
@@ -231,7 +239,7 @@ Return ONLY the JSON."""
         response_text = _call_groq(
             prompt,
             is_json=True,
-            max_tokens=6000,
+            max_tokens=2000,
             system_message=_NOTES_SYSTEM,
         )
     else:
@@ -288,6 +296,9 @@ def generate_flashcards(
     Returns a list of {topic, content, difficulty} objects.
     """
     settings = get_settings()
+    is_groq = settings.ai_provider == "groq" or (not api_key and settings.groq_api_key)
+    slice_limit = 12000 if is_groq else 100000
+    sliced_transcript = transcript[:slice_limit]
 
     topics_hint = ""
     if topics:
@@ -307,7 +318,7 @@ Each flashcard MUST have:
 Title: {note_title}{topics_hint}
 
 Content:
-{transcript[:8000]}
+{sliced_transcript}
 
 Return ONLY a valid JSON object with this structure:
 {{
@@ -329,7 +340,7 @@ Return ONLY the JSON."""
         response_text = _call_groq(
             prompt,
             is_json=True,
-            max_tokens=5000,
+            max_tokens=2000,
             system_message="You are an expert educator who creates comprehensive, detailed study flashcards.",
         )
     else:
@@ -362,6 +373,9 @@ def generate_quiz(
     Returns a list of {question, options, correct_answer, explanation} objects.
     """
     settings = get_settings()
+    is_groq = settings.ai_provider == "groq" or (not api_key and settings.groq_api_key)
+    slice_limit = 12000 if is_groq else 100000
+    sliced_transcript = transcript[:slice_limit]
 
     topics_hint = ""
     if topics:
@@ -378,7 +392,7 @@ Each question must have:
 Title: {note_title}{topics_hint}
 
 Content:
-{transcript[:6000]}
+{sliced_transcript}
 
 Return ONLY a valid JSON object with this structure:
 {{
@@ -396,7 +410,7 @@ Return ONLY a valid JSON object with this structure:
 Make questions progressively harder. Cover ALL major topics. Return ONLY the JSON."""
 
     if settings.ai_provider == "groq" or (not api_key and settings.groq_api_key):
-        response_text = _call_groq(prompt, is_json=True)
+        response_text = _call_groq(prompt, is_json=True, max_tokens=1500)
     else:
         client = _create_client(api_key)
         response = client.messages.create(

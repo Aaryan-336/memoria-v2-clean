@@ -21,15 +21,15 @@ import { motion, AnimatePresence } from "framer-motion"
 /* ── Color Theme Mappings ─────────────────────────────────── */
 
 const difficultyColor: Record<string, string> = {
-  easy: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30 dark:border-emerald-500/20",
-  medium: "from-blue-500/20 to-blue-600/5 border-blue-500/30 dark:border-blue-500/20",
-  hard: "from-red-500/20 to-red-600/5 border-red-500/30 dark:border-red-500/20",
+  easy: "from-[var(--accent-green)]/12 to-[var(--accent-green)]/2 border-border/80",
+  medium: "from-[var(--accent-blue)]/12 to-[var(--accent-blue)]/2 border-border/80",
+  hard: "from-[var(--accent-coral)]/12 to-[var(--accent-coral)]/2 border-border/80",
 }
 
 const difficultyLabel: Record<string, string> = {
-  easy: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  medium: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  hard: "bg-red-500/15 text-red-600 dark:text-red-400",
+  easy: "bg-[rgba(212,237,218,0.4)] text-[rgb(20,85,45)] dark:text-[var(--accent-green)]",
+  medium: "bg-[rgba(214,234,248,0.4)] text-[rgb(15,70,150)] dark:text-[var(--accent-blue)]",
+  hard: "bg-[rgba(232,93,74,0.15)] text-[rgb(165,30,20)] dark:text-[var(--accent-coral)]",
 }
 
 /* ── Grid Card Preview Component ─────────────────────────── */
@@ -50,25 +50,25 @@ function GridCard({
     <motion.div
       layoutId={`card-container-${card.id}`}
       onClick={onClick}
-      className={`break-inside-avoid mb-4 cursor-pointer relative w-full rounded-2xl bg-gradient-to-br ${colors} border p-6 
-        hover:scale-[1.02] hover:shadow-md transition-all duration-300 flex flex-col`}
+      className={`break-inside-avoid mb-6 cursor-pointer relative w-full rounded-[24px] bg-gradient-to-br ${colors} border p-6 
+        hover:scale-[1.01] hover:shadow-md transition-all duration-200 flex flex-col`}
     >
       <div className="flex items-start justify-between gap-2 mb-4">
         <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${labelColor}`}
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${labelColor}`}
         >
           {card.difficulty}
         </span>
         {isReviewed ? (
-          <CheckCircle2 className="w-4.5 h-4.5 text-emerald-650 dark:text-emerald-400" />
+          <CheckCircle2 className="w-4.5 h-4.5 text-[var(--accent-green)]" />
         ) : (
           <Layers className="w-4 h-4 text-muted-foreground/60" />
         )}
       </div>
-      <h3 className="text-foreground font-bold text-lg leading-snug mb-3 flex-1">
+      <h3 className="text-foreground font-bold text-lg leading-snug mb-4 flex-1">
         {card.topic}
       </h3>
-      <p className="text-muted-foreground text-xs font-semibold">Click to study →</p>
+      <p className="text-muted-foreground text-xs font-semibold hover:text-foreground transition-colors">Click to study →</p>
     </motion.div>
   )
 }
@@ -200,115 +200,120 @@ export default function FlashcardNotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-6 py-12 max-w-5xl mx-auto">
-      {/* Header */}
-      <Link
-        href="/flashcards"
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 font-medium text-sm"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Flashcards
-      </Link>
+    <div className="min-h-screen bg-background">
+      <div className="memoria-container py-8 lg:py-12 max-w-5xl">
+        {/* Header */}
+        <div className="mb-6 animate-memoria-fade-in">
+          <Link
+            href="/flashcards"
+            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm font-semibold transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Flashcards
+          </Link>
+        </div>
 
-      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {noteTitle || "Flashcards"}
-          </h1>
-          {totalCount > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-muted-foreground text-sm font-medium">
-                {totalCount} cards
-              </span>
-              <span className="text-muted-foreground/30">•</span>
-              <span className="text-amber-500 dark:text-amber-400 text-sm font-medium">
-                {reviewedCount} reviewed
-              </span>
-              {/* Progress bar */}
-              <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-amber-500 dark:bg-amber-400 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${totalCount > 0 ? (reviewedCount / totalCount) * 100 : 0}%`,
-                  }}
-                />
+        <div className="flex items-start justify-between gap-4 mb-8 flex-wrap animate-memoria-fade-in stagger-1">
+          <div>
+            <h1 className="text-foreground tracking-tight leading-tight mb-3">
+              {noteTitle || "Flashcards"}
+            </h1>
+            {totalCount > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-muted-foreground text-sm font-semibold">
+                  {totalCount} cards
+                </span>
+                <span className="text-muted-foreground/30">•</span>
+                <span className="text-[#8F6200] text-sm font-bold">
+                  {reviewedCount} reviewed
+                </span>
+                {/* Progress bar */}
+                <div className="w-28 h-2 bg-secondary rounded-full overflow-hidden border border-border/40">
+                  <div
+                    className="h-full bg-[var(--accent-yellow)] rounded-full transition-all duration-300"
+                    style={{
+                      width: `${totalCount > 0 ? (reviewedCount / totalCount) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 cursor-pointer shadow-sm shadow-amber-600/10"
-        >
-          {generating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : flashcards.length > 0 ? (
-            <RotateCcw className="w-4 h-4" />
-          ) : (
-            <Sparkles className="w-4 h-4" />
-          )}
-          {generating
-            ? "Generating…"
-            : flashcards.length > 0
-              ? "Regenerate"
-              : "Generate Flashcards"}
-        </button>
-      </div>
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex flex-col items-center gap-4 py-20">
-          <Loader2 className="w-8 h-8 text-amber-500 dark:text-amber-400 animate-spin" />
-          <p className="text-muted-foreground text-sm font-medium">Loading flashcards…</p>
-        </div>
-      )}
-
-      {/* Generating */}
-      {generating && (
-        <div className="flex flex-col items-center gap-4 py-20">
-          <Loader2 className="w-8 h-8 text-amber-500 dark:text-amber-400 animate-spin" />
-          <p className="text-muted-foreground text-sm font-medium">
-            AI is creating your flashcards…
-          </p>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && !generating && flashcards.length === 0 && (
-        <div className="text-center py-20 text-muted-foreground/60">
-          <Layers className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <p className="mb-4">No flashcards yet for this note.</p>
           <button
             onClick={handleGenerate}
-            className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-sm font-medium transition-all cursor-pointer inline-flex items-center gap-2 shadow-sm"
+            disabled={generating}
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent-yellow)]/10 hover:bg-[var(--accent-yellow)]/20 text-[#8F6200] dark:text-[#FFD867] border border-[var(--accent-yellow)]/30 rounded-full text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
           >
-            <Sparkles className="w-4 h-4" />
-            Generate Flashcards
+            {generating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : flashcards.length > 0 ? (
+              <RotateCcw className="w-4 h-4" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {generating
+              ? "Generating…"
+              : flashcards.length > 0
+                ? "Regenerate Deck"
+                : "Generate Flashcards"}
           </button>
         </div>
-      )}
 
-      {/* Grid of Preview Cards */}
-      {!loading && !generating && flashcards.length > 0 && (
-        <div
-          className="columns-1 sm:columns-2 lg:columns-3 gap-4"
-          style={{ columnFill: "balance" }}
-        >
-          {flashcards.map((card, idx) => (
-            <GridCard
-              key={card.id}
-              card={card}
-              isReviewed={flippedCards.has(card.id)}
-              onClick={() => {
-                setActiveCardIdx(idx)
-                setIsFlipped(false)
-              }}
-            />
-          ))}
-        </div>
-      )}
+        {/* Loading */}
+        {loading && (
+          <div className="flex flex-col items-center gap-4 py-20 animate-memoria-fade-in">
+            <Loader2 className="w-8 h-8 text-[var(--accent-yellow)] animate-spin" />
+            <p className="text-muted-foreground text-sm font-medium">Loading study materials…</p>
+          </div>
+        )}
+
+        {/* Generating */}
+        {generating && (
+          <div className="flex flex-col items-center gap-4 py-20 animate-memoria-fade-in">
+            <Loader2 className="w-8 h-8 text-[var(--accent-yellow)] animate-spin" />
+            <p className="text-muted-foreground text-sm font-medium">
+              AI Coach is building your study deck…
+            </p>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !generating && flashcards.length === 0 && (
+          <div className="text-center py-20 text-muted-foreground bg-card border border-border rounded-[24px] max-w-xl mx-auto p-8 shadow-[var(--shadow-card)] animate-memoria-fade-in stagger-2">
+            <Layers className="w-12 h-12 mx-auto mb-4 opacity-30 text-muted-foreground" />
+            <h3 className="text-foreground font-semibold mb-2" style={{ fontSize: '1.125rem' }}>No flashcards yet</h3>
+            <p className="text-muted-foreground text-sm mb-6">Create custom AI-generated flashcards to review this note.</p>
+            <button
+              onClick={handleGenerate}
+              className="px-6 py-2.5 bg-[var(--accent-yellow)] text-[#0B0B0F] rounded-full text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-md hover:opacity-90"
+            >
+              <Sparkles className="w-4 h-4" />
+              Generate Flashcards
+            </button>
+          </div>
+        )}
+
+        {/* Grid of Preview Cards */}
+        {!loading && !generating && flashcards.length > 0 && (
+          <div
+            className="columns-1 sm:columns-2 lg:columns-3 gap-6 animate-memoria-fade-in stagger-2"
+            style={{ columnFill: "balance" }}
+          >
+            {flashcards.map((card, idx) => (
+              <GridCard
+                key={card.id}
+                card={card}
+                isReviewed={flippedCards.has(card.id)}
+                onClick={() => {
+                  setActiveCardIdx(idx)
+                  setIsFlipped(false)
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Focused study overlay modal */}
       <AnimatePresence>
@@ -317,7 +322,7 @@ export default function FlashcardNotePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4"
+            className="fixed inset-0 bg-background/90 backdrop-blur-md z-50 flex flex-col items-center justify-start md:justify-center overflow-y-auto py-16 px-4"
             onClick={() => setActiveCardIdx(null)}
           >
             {/* Centered card content card */}
@@ -328,17 +333,28 @@ export default function FlashcardNotePage() {
               {/* Close button */}
               <button
                 onClick={() => setActiveCardIdx(null)}
-                className="absolute -top-12 right-0 text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted/50 rounded-full cursor-pointer"
+                className="absolute -top-12 right-2 sm:right-0 text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted/50 rounded-full cursor-pointer"
                 aria-label="Close study overlay"
               >
                 <X className="w-6 h-6" />
               </button>
 
-              {/* 3D Flippable card wrapper */}
-              <div
+              {/* 3D Flippable card wrapper with swipe gestures */}
+              <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.6}
+                onDragEnd={(event, info) => {
+                  const swipe = info.offset.x
+                  if (swipe < -80) {
+                    handleNextCard()
+                  } else if (swipe > 80) {
+                    handlePrevCard()
+                  }
+                }}
+                onTap={handleFlip}
                 className="w-full h-auto cursor-pointer"
                 style={{ perspective: "1000px" }}
-                onClick={handleFlip}
               >
                 <div
                   className="relative w-full h-auto transition-transform duration-600 ease-in-out"
@@ -350,14 +366,14 @@ export default function FlashcardNotePage() {
                 >
                   {/* Front face */}
                   <div
-                    className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${
+                    className={`absolute inset-0 rounded-[28px] bg-gradient-to-br ${
                       difficultyColor[flashcards[activeCardIdx].difficulty] || difficultyColor.medium
-                    } border border-border/80 p-8 flex flex-col justify-between shadow-2xl`}
+                    } border border-border/80 p-8 flex flex-col justify-between shadow-2xl min-h-[300px] sm:min-h-[380px]`}
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           difficultyLabel[flashcards[activeCardIdx].difficulty] || difficultyLabel.medium
                         }`}
                       >
@@ -368,57 +384,57 @@ export default function FlashcardNotePage() {
                     <h3 className="text-foreground font-extrabold text-2xl sm:text-3xl leading-snug text-center px-4 my-auto">
                       {flashcards[activeCardIdx].topic}
                     </h3>
-                    <p className="text-muted-foreground text-xs font-semibold text-center">
-                      Tap card to flip and reveal details →
+                    <p className="text-muted-foreground text-xs font-semibold text-center mt-auto">
+                      Tap card to reveal answer →
                     </p>
                   </div>
 
                   {/* Back face */}
                   <div
-                    className="relative w-full min-h-[380px] rounded-3xl bg-card border border-border p-8 flex flex-col justify-between shadow-2xl"
+                    className="relative w-full min-h-[300px] sm:min-h-[380px] rounded-[28px] bg-card border border-border p-8 flex flex-col justify-between shadow-2xl"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
                   >
                     <div>
-                      <div className="flex items-start justify-between gap-2 mb-4">
+                      <div className="flex items-start justify-between gap-2 mb-6">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             difficultyLabel[flashcards[activeCardIdx].difficulty] || difficultyLabel.medium
                           }`}
                         >
                           {flashcards[activeCardIdx].difficulty}
                         </span>
-                        <CheckCircle2 className="w-5 h-5 text-emerald-555 dark:text-emerald-400" />
+                        <CheckCircle2 className="w-5 h-5 text-[var(--accent-green)]" />
                       </div>
                       <h4 className="text-muted-foreground font-bold text-xs uppercase tracking-wider mb-2">
                         {flashcards[activeCardIdx].topic}
                       </h4>
-                      <p className="text-card-foreground text-base sm:text-lg leading-relaxed font-normal">
+                      <p className="text-foreground text-base sm:text-lg leading-relaxed font-normal">
                         {flashcards[activeCardIdx].content}
                       </p>
                     </div>
-                    <p className="text-muted-foreground/60 text-xs font-semibold text-center mt-4">
+                    <p className="text-muted-foreground/60 text-xs font-semibold text-center mt-6">
                       Tap card to flip back
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Navigation controls bar */}
               <div className="flex items-center justify-between mt-2 px-2">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handlePrevCard}
-                    className="p-3 bg-muted hover:bg-accent border border-border text-foreground hover:text-accent-foreground rounded-xl transition-colors cursor-pointer"
+                    className="p-3 bg-secondary hover:bg-muted border border-border/80 text-foreground rounded-full transition-colors cursor-pointer"
                     title="Previous card (Left Arrow)"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={handleNextCard}
-                    className="p-3 bg-muted hover:bg-accent border border-border text-foreground hover:text-accent-foreground rounded-xl transition-colors cursor-pointer"
+                    className="p-3 bg-secondary hover:bg-muted border border-border/80 text-foreground rounded-full transition-colors cursor-pointer"
                     title="Next card (Right Arrow)"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -431,7 +447,7 @@ export default function FlashcardNotePage() {
 
                 <button
                   onClick={handleFlip}
-                  className="px-5 py-2.5 bg-muted hover:bg-accent border border-border text-foreground hover:text-accent-foreground rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+                  className="px-5 py-2.5 bg-secondary hover:bg-muted border border-border/80 text-foreground rounded-full text-xs font-bold transition-colors cursor-pointer"
                 >
                   Flip (Space)
                 </button>
@@ -439,7 +455,7 @@ export default function FlashcardNotePage() {
 
               {/* Tips help */}
               <p className="text-center text-muted-foreground/50 text-[11px] font-medium mt-1">
-                Use Keyboard: Left/Right arrow to navigate • Space to flip • Esc to close
+                Use Keyboard: Left/Right Arrow to navigate • Space to flip • Esc to close
               </p>
             </div>
           </motion.div>

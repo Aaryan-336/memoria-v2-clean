@@ -8,8 +8,17 @@
  * Uses NEXT_PUBLIC_API_URL env var in production (set in Vercel),
  * falls back to localhost for local development.
  */
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API_BASE_URL = (() => {
+  if (typeof window !== "undefined") {
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+      return envUrl;
+    }
+    const host = window.location.hostname;
+    return `http://${host}:8000`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+})();
 
 /**
  * Construct a full API URL from a relative path.
@@ -81,10 +90,19 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new ApiError(
-      response.status,
-      (errorData as { detail?: string }).detail || response.statusText
-    );
+    let errMsg = response.statusText;
+    if (errorData) {
+      if (typeof errorData.detail === "string") {
+        errMsg = errorData.detail;
+      } else if (errorData.detail && typeof errorData.detail === "object") {
+        errMsg = errorData.detail.message || JSON.stringify(errorData.detail);
+      } else if (typeof errorData.message === "string") {
+        errMsg = errorData.message;
+      } else if (typeof errorData === "object" && errorData !== null) {
+        errMsg = errorData.message || JSON.stringify(errorData);
+      }
+    }
+    throw new ApiError(response.status, errMsg);
   }
 
   return response.json() as Promise<T>;

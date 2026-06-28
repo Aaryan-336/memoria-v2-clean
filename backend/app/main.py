@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.routers import health, notes, youtube, ask, search, flashcards, quiz
+from app.routers import subscriptions, usage, webhooks, billing, workspaces
 
 
 def create_app() -> FastAPI:
@@ -26,6 +27,7 @@ def create_app() -> FastAPI:
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
+        allow_origin_regex="https?://.*",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -39,6 +41,13 @@ def create_app() -> FastAPI:
     application.include_router(search.router)
     application.include_router(flashcards.router)
     application.include_router(quiz.router)
+
+    # ── Subscription, Billing & Workspaces ───────────────────
+    application.include_router(subscriptions.router)
+    application.include_router(usage.router)
+    application.include_router(webhooks.router)
+    application.include_router(billing.router)
+    application.include_router(workspaces.router)
 
     return application
 

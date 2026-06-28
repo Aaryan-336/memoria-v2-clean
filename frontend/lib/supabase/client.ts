@@ -7,8 +7,16 @@ import { createBrowserClient } from "@supabase/ssr";
  * environment variables.
  */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    console.warn("Supabase environment variables NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY are missing!");
+    return createBrowserClient(
+      url || "https://placeholder-project.supabase.co",
+      anonKey || "placeholder-anon-key"
+    );
+  }
+
+  return createBrowserClient(url, anonKey);
 }

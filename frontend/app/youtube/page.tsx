@@ -1,12 +1,16 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { PlayCircle, Loader2, CheckCircle } from "lucide-react"
+import { PlayCircle, Loader2, CheckCircle, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
 import { apiFetch } from "@/lib/api"
+import { useWorkspace } from "@/lib/workspace"
+import { WorkspaceSwitcher } from "@/components/ui/workspace-switcher"
 
 export default function YouTubePage() {
   const { user, loading: authLoading } = useAuth()
+  const { currentWorkspace } = useWorkspace()
   const router = useRouter()
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
@@ -26,7 +30,10 @@ export default function YouTubePage() {
     try {
       const data = await apiFetch<any>("/api/youtube", {
         method: "POST",
-        body: JSON.stringify({ url })
+        body: JSON.stringify({
+          url,
+          workspace_id: currentWorkspace?.id || null
+        })
       })
       setResult(data)
     } catch (e: any) {
@@ -44,66 +51,130 @@ export default function YouTubePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-6 py-12 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-foreground mb-2">YouTube Import</h1>
-      <p className="text-muted-foreground mb-10">Paste any YouTube URL to extract and summarize.</p>
-
-      <div className="flex gap-3 mb-8">
-        <input value={url} onChange={e => setUrl(e.target.value)}
-          placeholder="https://youtube.com/watch?v=..."
-          className="flex-1 px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-accent text-sm" />
-        <button onClick={process} disabled={loading || !url}
-          className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
-          Process
-        </button>
-      </div>
-
-      {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-6">{error}</div>
-      )}
-
-      {loading && (
-        <div className="flex flex-col items-center gap-4 py-20">
-          <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-          <p className="text-muted-foreground text-sm">Fetching transcript and generating notes…</p>
+    <div className="min-h-screen bg-background">
+      <div className="memoria-container py-8 lg:py-12 max-w-2xl">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4 animate-memoria-fade-in">
+          <div>
+            <Link href="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-4 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to dashboard
+            </Link>
+            <h1 className="text-foreground mb-2">YouTube Import</h1>
+            <p className="text-muted-foreground">Paste a YouTube video URL to automatically transcribe and summarize it.</p>
+          </div>
+          <div className="flex items-center">
+            <WorkspaceSwitcher />
+          </div>
         </div>
-      )}
 
-      {result && (
-        <div className="flex flex-col gap-4">
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-2">Title</h3>
-            <p className="text-foreground font-semibold">{result.ai?.title}</p>
+        {/* Input area */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-10 animate-memoria-fade-in stagger-1">
+          <div
+            className="flex-1 flex items-center gap-3 px-5 rounded-[28px] bg-card border border-border focus-within:border-[var(--accent-forest)] focus-within:shadow-[0_0_0_3px_rgba(45,106,79,0.08)] transition-all"
+            style={{ height: "56px" }}
+          >
+            <PlayCircle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            <input
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder="https://youtube.com/watch?v=..."
+              className="flex-1 bg-transparent text-foreground placeholder-muted-foreground focus:outline-none text-sm font-medium"
+            />
+            {url && (
+              <button
+                onClick={() => setUrl("")}
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                ×
+              </button>
+            )}
           </div>
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-2">Summary</h3>
-            <p className="text-card-foreground text-sm leading-relaxed">{result.ai?.summary}</p>
+          <button
+            onClick={process}
+            disabled={loading || !url}
+            className="px-6 rounded-[28px] text-sm font-semibold transition-all disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2"
+            style={{
+              height: "56px",
+              background: "var(--accent-forest)",
+              color: "#FFFFFF",
+            }}
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
+            Import
+          </button>
+        </div>
+
+        {error && (
+          <div className="p-4 rounded-full bg-[rgba(232,93,74,0.08)] border border-[rgba(232,93,74,0.2)] text-[var(--destructive)] text-sm font-semibold text-center mb-6 animate-memoria-fade-in">
+            {error}
           </div>
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">Key Points</h3>
-            <ul className="flex flex-col gap-2">
-              {result.ai?.key_points?.map((p: string, i: number) => (
-                <li key={i} className="flex gap-3 text-card-foreground text-sm">
-                  <span className="text-blue-400 font-mono">{String(i+1).padStart(2,'0')}</span>
-                  {p}
-                </li>
-              ))}
-            </ul>
+        )}
+
+        {loading && (
+          <div className="flex flex-col items-center gap-4 py-16 animate-memoria-fade-in">
+            <Loader2 className="w-8 h-8 text-[var(--accent-forest)] animate-spin" />
+            <p className="text-muted-foreground text-sm font-medium">Fetching transcripts and generating AI insights…</p>
           </div>
-          <div className="p-5 rounded-2xl bg-card border border-border">
-            <h3 className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-3">Topics</h3>
-            <div className="flex flex-wrap gap-2">
-              {result.ai?.topics?.map((t: string) => (
-                <span key={t} className="px-3 py-1 rounded-full bg-muted text-card-foreground text-xs">{t}</span>
-              ))}
+        )}
+
+        {result && (
+          <div className="flex flex-col gap-6 animate-memoria-fade-in stagger-2">
+            <div className="p-4 rounded-full bg-[var(--accent-mint)] border border-[rgba(212,237,218,0.5)] text-[var(--accent-forest)] text-sm font-bold text-center flex items-center justify-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Video processed and saved to your library
+            </div>
+
+            <div className="memoria-card-static">
+              <h3 className="text-[var(--accent-forest)] text-xs font-bold uppercase tracking-wider mb-2">
+                Title
+              </h3>
+              <p className="text-foreground font-bold text-lg">{result.ai?.title}</p>
+            </div>
+
+            <div className="memoria-card-static">
+              <h3 className="text-[var(--accent-forest)] text-xs font-bold uppercase tracking-wider mb-2">
+                Summary
+              </h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{result.ai?.summary}</p>
+            </div>
+
+            <div className="memoria-card-static">
+              <h3 className="text-[var(--accent-forest)] text-xs font-bold uppercase tracking-wider mb-4 border-b border-border/40 pb-2">
+                Key Points
+              </h3>
+              <ul className="flex flex-col gap-3">
+                {result.ai?.key_points?.map((p: string, i: number) => (
+                  <li key={i} className="flex gap-3 text-foreground text-sm leading-relaxed">
+                    <span className="text-[var(--accent-forest)] font-mono font-bold flex-shrink-0">
+                      {String(i+1).padStart(2,'0')}
+                    </span>
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="memoria-card-static">
+              <h3 className="text-[var(--accent-forest)] text-xs font-bold uppercase tracking-wider mb-3">
+                Topics & Keywords
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {result.ai?.topics?.map((t: string) => (
+                  <span
+                    key={t}
+                    className="px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-medium border border-border/40"
+                  >
+                    {t}
+                  </span>
+                ))}
+                {(!result.ai?.topics || result.ai.topics.length === 0) && (
+                  <span className="text-xs text-muted-foreground italic">No topics extracted</span>
+                )}
+              </div>
             </div>
           </div>
-          <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center">
-            ✓ Note saved to your library
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

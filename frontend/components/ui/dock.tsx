@@ -3,123 +3,118 @@ import * as React from "react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import {
-  Mic,
-  PlayCircle,
-  BookOpen,
-  MessageSquare,
+  Home,
   Search,
-  LayoutDashboard,
-  Layers,
-  Timer,
+  MessageSquare,
+  BookOpen,
+  User,
 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 
-const dockItems = [
-  { icon: LayoutDashboard, label: "Home", href: "/" },
-  { icon: Mic, label: "Record", href: "/record" },
-  { icon: PlayCircle, label: "YouTube", href: "/youtube" },
-  { icon: BookOpen, label: "Notes", href: "/notes" },
-  { icon: Layers, label: "Cards", href: "/flashcards" },
-  { icon: Timer, label: "Quiz", href: "/quiz" },
-  { icon: MessageSquare, label: "Ask AI", href: "/ask" },
+/* ── Navigation Items ── */
+
+const navItems = [
+  { icon: Home, label: "Home", href: "/" },
   { icon: Search, label: "Search", href: "/search" },
+  { icon: MessageSquare, label: "AI", href: "/ask" },
+  { icon: BookOpen, label: "Notes", href: "/notes" },
+  { icon: User, label: "Profile", href: "/settings/billing" },
 ]
 
-import { Sun, Moon } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
+/* ── Bottom Nav Item ── */
 
-const DockIconButton = ({ icon: Icon, label, href, active }: {
+function NavItem({
+  icon: Icon,
+  label,
+  href,
+  active,
+}: {
   icon: React.ElementType
   label: string
   href: string
-  active?: boolean
-}) => {
+  active: boolean
+}) {
   return (
-    <motion.div
-      whileHover={{ scale: 1.15, y: -4 }}
-      whileTap={{ scale: 0.95 }}
+    <Link
+      href={href}
+      className={cn(
+        "relative flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all duration-200 flex-1 min-w-0",
+        active
+          ? "text-[var(--accent-forest)]"
+          : "text-[var(--muted-foreground)]"
+      )}
     >
-      <Link
-        href={href}
+      <Icon
         className={cn(
-          "relative group flex flex-col items-center gap-1 p-3 rounded-xl transition-colors",
-          active ? "bg-muted text-foreground" : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
-        )}
-      >
-        <Icon className={cn(
           "w-5 h-5 transition-colors",
-          active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground group-hover:text-foreground"
-        )} />
-        <span className={cn(
-          "text-[10px] font-medium transition-colors",
-          active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground/80 group-hover:text-foreground"
-        )}>
-          {label}
-        </span>
-        {active && (
-          <motion.div
-            layoutId="dock-active"
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500 dark:bg-blue-400"
-          />
+          active ? "text-[var(--accent-forest)]" : ""
         )}
-      </Link>
-    </motion.div>
-  )
-}
-
-const DockThemeToggle = () => {
-  const { resolvedTheme, toggleTheme } = useTheme()
-  const Icon = resolvedTheme === "dark" ? Sun : Moon
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.15, y: -4 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      <button
-        onClick={toggleTheme}
-        className="relative group flex flex-col items-center gap-1 p-3 rounded-xl transition-colors hover:bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer"
-        aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
-        title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+      />
+      <span
+        className={cn(
+          "text-[10px] font-semibold transition-colors",
+          active ? "text-[var(--accent-forest)]" : ""
+        )}
       >
-        <Icon className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-        <span className="text-[10px] font-medium text-muted-foreground/80 group-hover:text-foreground transition-colors">
-          Theme
-        </span>
-      </button>
-    </motion.div>
+        {label}
+      </span>
+      {active && (
+        <motion.div
+          layoutId="dock-active-indicator"
+          className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-[var(--accent-forest)]"
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+        />
+      )}
+    </Link>
   )
 }
 
-const MemoriaDock = () => {
+/* ── Bottom Dock Navigation (All Screens) ── */
+
+function BottomDock() {
   const pathname = usePathname()
 
+  // Hide on auth pages
+  if (pathname.startsWith("/login") || pathname.startsWith("/signup")) {
+    return null
+  }
+
   return (
-    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
-      <motion.div
+    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none px-4 pb-4 flex justify-center">
+      <motion.nav
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className={cn(
           "pointer-events-auto",
-          "flex items-center gap-1 px-3 py-2 rounded-2xl",
-          "bg-card/85 backdrop-blur-xl border border-border",
-          "shadow-xl shadow-black/10 dark:shadow-black/40"
+          "flex items-center justify-around px-2 py-2",
+          "rounded-[28px] h-[68px]",
+          "w-full max-w-md",
+          "bg-background border border-[var(--border)]",
         )}
+        style={{ boxShadow: "var(--shadow-nav)" }}
       >
-        {dockItems.map((item) => (
-          <DockIconButton
-            key={item.label}
+        {navItems.map((item) => (
+          <NavItem
+            key={item.href}
             {...item}
-            active={pathname === item.href}
+            active={
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href)
+            }
           />
         ))}
-        <div className="w-px h-6 bg-border mx-1 self-center" />
-        <DockThemeToggle />
-      </motion.div>
+      </motion.nav>
     </div>
   )
+}
+
+/* ── Combined Navigation Export ── */
+
+const MemoriaDock = () => {
+  return <BottomDock />
 }
 
 export { MemoriaDock }

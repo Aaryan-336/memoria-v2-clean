@@ -181,8 +181,18 @@ def main():
         # Execute each statement (separated by semicolons, but since DO $$ block contains semicolons,
         # we will run it as a single transaction block)
         cursor.execute(sql_script)
+        
+        # Load and run all migrations in backend/app/migrations/ sorted by name
+        migrations_dir = backend_dir / "app" / "migrations"
+        if migrations_dir.exists():
+            migration_files = sorted(migrations_dir.glob("*.sql"))
+            for m_file in migration_files:
+                print(f"Running migration: {m_file.name}...")
+                migration_sql = m_file.read_text()
+                cursor.execute(migration_sql)
+            
         conn.commit()
-        print("\nSuccess! The 'notes' table and Row-Level Security (RLS) policies have been set up.")
+        print("\nSuccess! The database tables, Row-Level Security (RLS) policies, and subscription system have been set up.")
     except Exception as e:
         conn.rollback()
         print(f"\nFailed to execute SQL: {e}")

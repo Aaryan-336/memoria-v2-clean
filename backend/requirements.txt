@@ -11,3 +11,5 @@ numpy
 youtube-transcript-api
 python-jose[cryptography]
 pg8000
+stripe
+redis
