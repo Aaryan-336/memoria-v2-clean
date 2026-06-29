@@ -119,7 +119,7 @@ export default function FlashcardsPage() {
                     <button
                       onClick={() => handleGenerate(note.id)}
                       disabled={generating === note.id}
-                      className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--accent-yellow)]/10 hover:bg-[var(--accent-yellow)]/20 text-[#8F6200] dark:text-[#FFD867] border border-[var(--accent-yellow)]/30 rounded-full text-xs font-bold transition-all disabled:opacity-50 flex-1 justify-center cursor-pointer"
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--accent-yellow)]/15 hover:bg-[var(--accent-yellow)]/25 text-[#855B00] dark:text-[#FFD254] border border-[var(--accent-yellow)]/40 rounded-full text-xs font-bold transition-all disabled:opacity-50 flex-1 justify-center cursor-pointer"
                     >
                       {generating === note.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
