@@ -11,10 +11,7 @@ import {
   HelpCircle,
   ListChecks,
   Bell,
-  Layers,
-  Timer,
   ExternalLink,
-  X,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -22,7 +19,6 @@ import ReactMarkdown from "react-markdown"
 import type { Note } from "@/lib/types"
 import { apiFetch } from "@/lib/api"
 import { useAuth } from "@/components/auth/auth-provider"
-import { motion, AnimatePresence } from "framer-motion"
 
 export default function NoteDetailPage() {
   const { user, loading: authLoading } = useAuth()
@@ -34,8 +30,6 @@ export default function NoteDetailPage() {
   const [activeTab, setActiveTab] = useState<
     "notes" | "transcript" | "questions" | "actions"
   >("notes")
-  const [showQuizModal, setShowQuizModal] = useState(false)
-  const [quizQuestionsCount, setQuizQuestionsCount] = useState(10)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -312,105 +306,6 @@ export default function NoteDetailPage() {
           )}
         </div>
       </div>
-
-      {/* Floating Study Actions Bar */}
-      <div className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-40 bg-card/90 backdrop-blur-md px-6 py-3 rounded-full border border-border/60 shadow-[var(--shadow-nav)] flex items-center gap-3 animate-memoria-slide-up">
-        <span className="text-xs text-muted-foreground font-semibold hidden md:inline mr-2 border-r border-border/45 pr-4">
-          Study Tools
-        </span>
-        <Link
-          href={`/flashcards/${note.id}`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-butter)] text-[#916E0A] rounded-full text-xs font-bold transition-all border border-[rgba(145,110,10,0.2)]"
-        >
-          <Layers className="w-3.5 h-3.5" />
-          Flashcards
-        </Link>
-        <button
-          onClick={() => setShowQuizModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-sky)] text-[#1C5F9B] rounded-full text-xs font-bold transition-all border border-[rgba(28,95,155,0.2)] cursor-pointer"
-        >
-          <Timer className="w-3.5 h-3.5" />
-          Take Quiz
-        </button>
-      </div>
-
-      {/* Quiz Count Modal */}
-      <AnimatePresence>
-        {showQuizModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
-            onClick={() => setShowQuizModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="bg-card border border-border rounded-[28px] p-6 max-w-sm w-full shadow-2xl flex flex-col gap-6 relative animate-memoria-scale-in"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setShowQuizModal(false)}
-                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-muted rounded-full cursor-pointer"
-                aria-label="Close dialog"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="text-center sm:text-left">
-                <h3 className="text-foreground font-bold text-lg mb-1 flex items-center gap-2 justify-center sm:justify-start">
-                  <Timer className="w-5 h-5 text-[var(--accent-blue)]" />
-                  Quiz Mode Configuration
-                </h3>
-                <p className="text-muted-foreground text-xs font-semibold leading-normal">
-                  How many questions would you like to answer in this timed quiz session?
-                </p>
-              </div>
-
-              {/* Selection Bar */}
-              <div className="flex justify-between gap-1.5 p-1 bg-secondary rounded-full border border-border/40">
-                {[5, 10, 15, 20].map((count) => (
-                  <button
-                    key={count}
-                    type="button"
-                    onClick={() => setQuizQuestionsCount(count)}
-                    className={`flex-1 py-2 text-center rounded-full text-xs font-bold transition-all cursor-pointer ${
-                      quizQuestionsCount === count
-                        ? "bg-[var(--accent-blue)] text-[#0B0B0F] shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {count}Q
-                  </button>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowQuizModal(false)}
-                  className="flex-1 py-3 bg-secondary hover:bg-muted border border-border/40 text-foreground rounded-full text-xs font-bold transition-colors cursor-pointer text-center"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowQuizModal(false)
-                    router.push(`/quiz/${note.id}?questions=${quizQuestionsCount}`)
-                  }}
-                  className="flex-1 py-3 bg-[var(--accent-blue)] text-[#0B0B0F] rounded-full text-xs font-bold transition-colors cursor-pointer text-center shadow-md hover:opacity-90"
-                >
-                  Start Quiz
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
