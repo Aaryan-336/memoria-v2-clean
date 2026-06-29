@@ -27,9 +27,9 @@ const difficultyColor: Record<string, string> = {
 }
 
 const difficultyLabel: Record<string, string> = {
-  easy: "bg-[rgba(212,237,218,0.4)] text-[rgb(20,85,45)] dark:text-[var(--accent-green)]",
-  medium: "bg-[rgba(214,234,248,0.4)] text-[rgb(15,70,150)] dark:text-[var(--accent-blue)]",
-  hard: "bg-[rgba(232,93,74,0.15)] text-[rgb(165,30,20)] dark:text-[var(--accent-coral)]",
+  easy: "bg-[rgba(76,175,125,0.15)] text-[rgb(15,90,45)]",
+  medium: "bg-[rgba(58,143,214,0.15)] text-[rgb(15,70,140)]",
+  hard: "bg-[rgba(224,75,56,0.15)] text-[rgb(165,30,20)]",
 }
 
 /* ── Grid Card Preview Component ─────────────────────────── */

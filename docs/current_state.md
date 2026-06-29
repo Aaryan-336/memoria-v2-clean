@@ -1,45 +1,38 @@
 # Current State
 
-Memoria currently consists of:
+Memoria V2 consists of:
 
 ## Frontend
 - React 19.2.4 (via Next.js 16.2.1, App Router)
 - TypeScript (strict mode)
-- Tailwind CSS v4 + shadcn/ui (Radix Nova style)
+- Tailwind CSS v4 + shadcn/ui (Warm Editorial System)
 - Framer Motion for animations
-- 5 page routes: Home, Record, YouTube, Notes, Ask, Search
-- 9 reusable UI components (shadcn) + 1 custom Dock navigation
-- Dark theme with oklch color system
+- Bottom-dock navigation (all screens)
+- Main views: Home, Record, YouTube, Notes, Ask (AI chat & SSE Deep Research), Search, Flashcards, Quiz, Pricing, and Billing Settings.
 
 ## Backend
-- FastAPI (flat file structure)
-- 5 API endpoints: health, generate-notes, youtube, notes, ask, search
-- Pydantic request/response models
+- FastAPI (structured with app/routers, app/services, app/models, app/middleware)
+- Fully authenticated API endpoints with Supabase Auth verification
+- Multi-user Workspace organization with role-based access control (RBAC)
+- Subscription tiers synced with Stripe Checkout & Webhooks
+- Telemetry & rate-limiting with Upstash Redis counter and DB fallback
 
-## Database
-- Supabase PostgreSQL
-- Single `notes` table
-
-## Storage
-- Supabase Storage
+## Database & Storage
+- Supabase PostgreSQL (notes, flashcards, workspaces, workspace_members, usage_daily, subscription_plans, user_subscriptions, payment_history)
+- Supabase Storage for media uploads
 
 ## AI
-- Claude Sonnet (reasoning, note generation, Q&A)
+- Claude 3.5 Sonnet / Groq (LLM note synthesis & Q&A)
 - Web Speech API (browser-side live transcription)
+- SSE-driven Deep Research Multi-Agent orchestration simulation
 
-## Not Yet Implemented
-- Authentication (all requests use hardcoded user_id)
-- Whisper transcription (server-side)
+## Not Yet Implemented (Future Phases)
+- Whisper transcription (server-side fallback)
 - Voyage AI embeddings
 - FAISS vector indexing
-- Semantic search (currently SQL ILIKE)
-- RAG with vector retrieval (currently sends raw notes to Claude)
-- Flashcards
-- Quiz generation
-- Redis caching
-- Rate limiting
+- Semantic search (currently SQL ILIKE search)
+- RAG with vector retrieval (currently sends recent notes as prompt context)
 
 ## Conventions
 The codebase should be treated as the source of truth for existing functionality.
-
 Agents must preserve existing functionality unless explicitly instructed otherwise.

@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.routers import health, notes, youtube, ask, search, flashcards, quiz
-from app.routers import subscriptions, usage, webhooks, billing, workspaces
+from app.routers import subscriptions, usage, webhooks, billing, workspaces, upload
 
 
 def create_app() -> FastAPI:
@@ -37,6 +37,7 @@ def create_app() -> FastAPI:
     application.include_router(health.router)
     application.include_router(notes.router)
     application.include_router(youtube.router)
+    application.include_router(upload.router)
     application.include_router(ask.router)
     application.include_router(search.router)
     application.include_router(flashcards.router)

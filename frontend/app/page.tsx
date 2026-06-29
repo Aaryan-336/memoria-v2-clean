@@ -17,6 +17,7 @@ import {
   Sparkles,
   TrendingUp,
   BookMarked,
+  Upload,
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -107,6 +108,7 @@ export default function Home() {
   const quickActions = [
     { icon: Mic, label: "Record", desc: "Voice note", href: "/record", color: "var(--accent-sky)", bgColor: "var(--accent-sky)" },
     { icon: PlayCircle, label: "YouTube", desc: "Import video", href: "/youtube", color: "var(--accent-peach)", bgColor: "var(--accent-peach)" },
+    { icon: Upload, label: "Upload File", desc: "PDF, PPT, Audio, Image", href: "/upload", color: "var(--accent-mint)", bgColor: "var(--accent-mint)" },
     { icon: MessageSquare, label: "Research", desc: "Ask AI", href: "/ask", color: "var(--accent-lavender)", bgColor: "var(--accent-lavender)" },
     { icon: BookOpen, label: "Notes", desc: "Library", href: "/notes", color: "var(--accent-mint)", bgColor: "var(--accent-mint)" },
   ]
@@ -210,7 +212,7 @@ export default function Home() {
           <h3 className="text-foreground font-semibold text-sm mb-4 uppercase tracking-wider" style={{ fontSize: '0.75rem' }}>
             Quick Actions
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {quickActions.map((item) => (
               <Link
                 key={item.href}

@@ -7,8 +7,10 @@ CRUD + AI generation endpoints for flashcards. All endpoints require authenticat
 from fastapi import APIRouter, HTTPException
 
 from app.dependencies import CurrentUser, DatabaseDep, SettingsDep
+from app.middleware.subscription import SubscriptionDep, check_daily_quota
 from app.models.schemas import GenerateFlashcardsRequest
 from app.services.ai_service import generate_flashcards
+from app.services.usage_service import increment_usage, track_usage_to_db, log_usage_event
 
 router = APIRouter(prefix="/api", tags=["flashcards"])
 
@@ -17,10 +19,14 @@ router = APIRouter(prefix="/api", tags=["flashcards"])
 async def create_flashcards(
     req: GenerateFlashcardsRequest,
     current_user: CurrentUser,
+    sub: SubscriptionDep,
     db: DatabaseDep,
     settings: SettingsDep,
 ):
     """Generate AI flashcards for a specific note. Requires authentication."""
+    # Enforce daily quota
+    check_daily_quota(sub, "flashcards_generated", "max_ai_queries_daily")
+
     try:
         # Fetch the note and verify ownership
         note_resp = (
@@ -79,6 +85,11 @@ async def create_flashcards(
         ]
 
         result = db.table("flashcards").insert(rows).execute()
+
+        # Track usage after successful generation
+        increment_usage(current_user.user_id, "flashcards_generated")
+        track_usage_to_db(db, current_user.user_id, "flashcards_generated")
+        log_usage_event(db, current_user.user_id, "flashcards_generated", {"note_id": req.note_id, "count": len(cards)})
 
         return {"success": True, "flashcards": result.data}
 

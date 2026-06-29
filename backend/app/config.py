@@ -6,6 +6,7 @@ All environment variables are validated at startup.
 """
 
 from functools import lru_cache
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -54,6 +55,12 @@ class Settings(BaseSettings):
     app_name: str = "Memoria AI"
     debug: bool = False
 
+    @model_validator(mode="after")
+    def add_frontend_url_to_cors(self) -> "Settings":
+        if self.frontend_url and self.frontend_url not in self.cors_origins:
+            self.cors_origins = self.cors_origins + [self.frontend_url]
+        return self
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -65,3 +72,4 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Cached settings instance — loaded once at startup."""
     return Settings()
+

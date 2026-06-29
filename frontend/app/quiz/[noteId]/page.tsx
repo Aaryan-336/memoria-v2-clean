@@ -180,7 +180,7 @@ export default function QuizSessionPage() {
           </div>
           <button
             onClick={handleRetake}
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent-blue)]/10 hover:bg-[var(--accent-blue)]/20 text-[#2B7ECF] dark:text-[#8BC5FF] border border-[var(--accent-blue)]/30 rounded-full text-xs font-bold transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent-blue)]/15 hover:bg-[var(--accent-blue)]/25 text-[#1A5FA0] border border-[var(--accent-blue)]/40 rounded-full text-xs font-bold transition-all cursor-pointer shadow-sm"
           >
             <RotateCcw className="w-4 h-4" />
             Try Again
@@ -255,7 +255,7 @@ export default function QuizSessionPage() {
             </button>
             <Link
               href="/quiz"
-              className="flex items-center justify-center gap-1.5 px-5 py-3 bg-[var(--accent-blue)]/10 hover:bg-[var(--accent-blue)]/20 text-[#2B7ECF] dark:text-[#8BC5FF] border border-[var(--accent-blue)]/30 rounded-full text-xs font-bold transition-all flex-1 shadow-sm text-center"
+              className="flex items-center justify-center gap-1.5 px-5 py-3 bg-[var(--accent-blue)]/15 hover:bg-[var(--accent-blue)]/25 text-[#1A5FA0] border border-[var(--accent-blue)]/40 rounded-full text-xs font-bold transition-all flex-1 shadow-sm text-center"
             >
               <BookOpen className="w-4 h-4" />
               Quiz Library
@@ -275,10 +275,10 @@ export default function QuizSessionPage() {
                   key={idx}
                   className={`rounded-[18px] border transition-all ${
                     isCorrect
-                      ? "bg-[rgba(223,245,154,0.1)] border-[rgba(223,245,154,0.2)]"
+                      ? "bg-[rgba(76,175,125,0.08)] border-[rgba(76,175,125,0.25)]"
                       : userAnswer === ""
                       ? "bg-secondary border-border/50"
-                      : "bg-[rgba(255,111,111,0.1)] border-[rgba(255,111,111,0.2)]"
+                      : "bg-[rgba(224,75,56,0.08)] border-[rgba(224,75,56,0.25)]"
                   }`}
                 >
                   <button
@@ -311,9 +311,9 @@ export default function QuizSessionPage() {
                               key={opt}
                               className={`p-3 rounded-full border text-xs leading-relaxed ${
                                 isCorrectOpt
-                                  ? "bg-[rgba(223,245,154,0.15)] border-[rgba(223,245,154,0.3)] text-[rgb(110,140,10)] dark:text-[var(--accent-green)] font-bold"
+                                  ? "bg-[rgba(76,175,125,0.12)] border-[rgba(76,175,125,0.35)] text-[rgb(20,100,55)] font-bold"
                                   : isSelectedOpt
-                                  ? "bg-[rgba(255,111,111,0.15)] border-[rgba(255,111,111,0.3)] text-[rgb(210,50,50)] dark:text-[var(--accent-coral)] font-bold"
+                                  ? "bg-[rgba(224,75,56,0.12)] border-[rgba(224,75,56,0.35)] text-[rgb(180,40,30)] font-bold"
                                   : "bg-secondary/60 border-border text-muted-foreground"
                               }`}
                             >
@@ -412,10 +412,10 @@ export default function QuizSessionPage() {
                   onClick={() => handleSelectAnswer(opt)}
                   className={`p-5 rounded-[20px] text-left border text-sm font-semibold transition-all flex items-center justify-between ${
                     isSelected
-                      ? "bg-[rgba(139,197,255,0.12)] border-[var(--accent-blue)] text-[var(--accent-blue)]"
+                      ? "bg-[rgba(58,143,214,0.12)] border-[var(--accent-blue)] text-[#1A5FA0] font-bold"
                       : hasAnswered
                       ? "bg-secondary/40 border-border/40 text-muted-foreground/60"
-                      : "bg-card border-border hover:border-[var(--accent-blue)] text-foreground hover:bg-secondary/30 cursor-pointer shadow-sm"
+                      : "bg-card border-border hover:border-[var(--accent-blue)] text-foreground hover:bg-[rgba(58,143,214,0.06)] cursor-pointer shadow-sm"
                   }`}
                 >
                   <span>{opt}</span>
@@ -430,7 +430,7 @@ export default function QuizSessionPage() {
           <button
             onClick={() => handleNext(false)}
             disabled={selectedAnswers[currentIdx] === undefined}
-            className="px-6 py-3 bg-[var(--accent-blue)] text-[#0B0B0F] disabled:bg-secondary disabled:text-muted-foreground/40 rounded-full text-xs font-bold transition-all cursor-pointer shadow-md disabled:shadow-none"
+            className="px-6 py-3 bg-[var(--accent-blue)] text-white disabled:bg-secondary disabled:text-muted-foreground/40 rounded-full text-xs font-bold transition-all cursor-pointer shadow-md disabled:shadow-none"
           >
             {currentIdx < questions.length - 1 ? "Next Question" : "Finish Quiz"}
           </button>

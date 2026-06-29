@@ -98,22 +98,22 @@
   --sidebar-border: #E5DDD3;
   --sidebar-ring: #2D6A4F;
 
-  /* ── Pastel Card Accent Palette ── */
-  --accent-mint: #D4EDDA;
-  --accent-lavender: #E8DFF5;
-  --accent-peach: #FCE4D6;
-  --accent-butter: #FFF3CD;
-  --accent-sky: #D6EAF8;
+  /* ── Card Accent Palette (Richer, Higher Saturation) ── */
+  --accent-mint: #6BCB8B;
+  --accent-lavender: #B794D6;
+  --accent-peach: #F4A87C;
+  --accent-butter: #F5C842;
+  --accent-sky: #5BAADF;
 
   /* Interactive accent */
-  --accent-forest: #2D6A4F;
+  --accent-forest: #1E7A4A;
 
   /* Legacy aliases (for components that still reference old names) */
-  --accent-purple: #E8DFF5;
-  --accent-green: #D4EDDA;
-  --accent-coral: #E85D4A;
-  --accent-yellow: #D4A843;
-  --accent-blue: #D6EAF8;
+  --accent-purple: #B794D6;
+  --accent-green: #4CAF7D;
+  --accent-coral: #E04B38;
+  --accent-yellow: #D49A2A;
+  --accent-blue: #3A8FD6;
 
   /* Shadows — very subtle */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);

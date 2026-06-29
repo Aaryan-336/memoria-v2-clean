@@ -93,12 +93,12 @@ export function PricingCard({ plan, interval, currentPlan, onSelect, isPopular }
 
   return (
     <div
-      className={`relative flex flex-col rounded-[24px] border p-6 transition-all duration-300 ${
+      className={`relative flex flex-col rounded-[24px] border p-6 transition-all duration-300 group ${
         isPopular
-          ? "border-[var(--accent-blue)]/50 bg-[var(--accent-blue)]/5 shadow-[var(--shadow-card)] scale-[1.02]"
+          ? "border-[var(--accent-blue)]/50 bg-[var(--accent-blue)]/5 shadow-[var(--shadow-card)] scale-[1.02] hover:scale-[1.04] hover:shadow-lg"
           : isCurrent
-            ? "border-[var(--accent-forest)]/30 bg-secondary/15"
-            : "border-border bg-card hover:border-border/80 hover:shadow-md"
+            ? "border-[var(--accent-forest)]/30 bg-secondary/15 hover:scale-[1.01]"
+            : "border-border bg-card hover:border-border/80 hover:shadow-md hover:scale-[1.03] hover:shadow-lg"
       }`}
     >
       {/* Popular badge */}
@@ -111,64 +111,69 @@ export function PricingCard({ plan, interval, currentPlan, onSelect, isPopular }
         </div>
       )}
 
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-bold text-foreground">{plan.display_name}</h3>
-        <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed font-semibold">{plan.description}</p>
-      </div>
+      {/* Header & Pricing Container to align CTA buttons */}
+      <div className="min-h-[180px] flex flex-col justify-between mb-6">
+        {/* Header */}
+        <div>
+          <h3 className="text-lg font-bold text-foreground">{plan.display_name}</h3>
+          <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed font-semibold">{plan.description}</p>
+        </div>
 
-      {/* Pricing */}
-      <div className="mb-6 mt-auto">
-        {plan.price_monthly === 0 ? (
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-black text-foreground">Free</span>
-          </div>
-        ) : (
-          <div>
+        {/* Pricing */}
+        <div>
+          {plan.price_monthly === 0 ? (
             <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-black text-foreground">
-                ₹{monthlyPrice}
-              </span>
-              <span className="text-muted-foreground text-sm font-bold">/mo</span>
+              <span className="text-4xl font-black text-foreground">Free</span>
             </div>
-            {interval === "yearly" && yearlySavings > 0 && (
-              <p className="mt-1.5 text-[11px] font-bold text-[var(--accent-forest)] uppercase tracking-wider">
-                Save {yearlySavings}% with yearly billing
-              </p>
-            )}
-            {interval === "yearly" && (
-              <p className="mt-1 text-xs text-muted-foreground font-semibold">
-                ₹{price} billed annually
-              </p>
-            )}
-          </div>
-        )}
-        {plan.name === "team" && (
-          <p className="mt-1 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">per user / month</p>
-        )}
+          ) : (
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-foreground">
+                  ₹{monthlyPrice}
+                </span>
+                <span className="text-muted-foreground text-sm font-bold">/mo</span>
+              </div>
+              {interval === "yearly" && yearlySavings > 0 && (
+                <p className="mt-1.5 text-[11px] font-bold text-[var(--accent-forest)] uppercase tracking-wider">
+                  Save {yearlySavings}% with yearly billing
+                </p>
+              )}
+              {interval === "yearly" && (
+                <p className="mt-1 text-xs text-muted-foreground font-semibold">
+                  ₹{price} billed annually
+                </p>
+              )}
+            </div>
+          )}
+          {plan.name === "team" && (
+            <p className="mt-1 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">per user / month</p>
+          )}
+        </div>
       </div>
 
       {/* CTA Button */}
       <button
         onClick={() => onSelect(plan)}
         disabled={isCurrent}
-        className={`mb-6 w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+        className={`mb-6 w-full rounded-full py-3 text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
           isCurrent
             ? "bg-secondary text-muted-foreground cursor-not-allowed border border-border/50"
-            : plan.name === "pro"
-              ? "bg-[var(--accent-blue)] text-[#0B0B0F] hover:opacity-90 shadow-sm"
-              : plan.name === "premium"
-                ? "bg-[var(--accent-forest)] text-white hover:opacity-90 shadow-sm"
-                : plan.name === "team"
-                  ? "bg-[var(--accent-green)] text-[#0B0B0F] hover:opacity-90 shadow-sm"
-                  : "bg-foreground text-background hover:opacity-95"
+            : `bg-primary text-primary-foreground shadow-sm ${
+                plan.name === "pro"
+                  ? "group-hover:bg-[var(--accent-blue)] group-hover:text-[#0B0B0F]"
+                  : plan.name === "premium"
+                    ? "group-hover:bg-[var(--accent-forest)] group-hover:text-white"
+                    : plan.name === "team"
+                      ? "group-hover:bg-[var(--accent-green)] group-hover:text-[#0B0B0F]"
+                      : "group-hover:bg-foreground group-hover:text-background"
+              }`
         }`}
       >
         {isCurrent ? "Current Plan" : "Select Plan"}
       </button>
 
       {/* Features */}
-      <ul className="flex flex-col gap-3 border-t border-border/40 pt-6">
+      <ul className="flex flex-col gap-3 border-t border-border/40 pt-6 mt-auto">
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2.5 text-xs">
             <Check className={`h-4 w-4 mt-0.5 shrink-0 ${getPlanTextAccent()}`} />

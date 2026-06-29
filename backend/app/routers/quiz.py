@@ -8,8 +8,10 @@ All endpoints require authentication.
 from fastapi import APIRouter, HTTPException
 
 from app.dependencies import CurrentUser, DatabaseDep, SettingsDep
+from app.middleware.subscription import SubscriptionDep, check_daily_quota
 from app.models.schemas import GenerateQuizRequest
 from app.services.ai_service import generate_quiz
+from app.services.usage_service import increment_usage, track_usage_to_db, log_usage_event
 
 router = APIRouter(prefix="/api", tags=["quiz"])
 
@@ -18,6 +20,7 @@ router = APIRouter(prefix="/api", tags=["quiz"])
 async def create_quiz(
     req: GenerateQuizRequest,
     current_user: CurrentUser,
+    sub: SubscriptionDep,
     db: DatabaseDep,
     settings: SettingsDep,
 ):
@@ -25,6 +28,9 @@ async def create_quiz(
 
     Quizzes are NOT persisted — they are generated fresh each time.
     """
+    # Enforce daily quota
+    check_daily_quota(sub, "quizzes_generated", "max_ai_queries_daily")
+
     try:
         # Fetch the note and verify ownership
         note_resp = (
@@ -64,6 +70,11 @@ async def create_quiz(
             raise HTTPException(
                 status_code=500, detail="AI failed to generate quiz questions"
             )
+
+        # Track usage after successful generation
+        increment_usage(current_user.user_id, "quizzes_generated")
+        track_usage_to_db(db, current_user.user_id, "quizzes_generated")
+        log_usage_event(db, current_user.user_id, "quiz_generated", {"note_id": req.note_id, "questions": len(questions)})
 
         return {
             "success": True,

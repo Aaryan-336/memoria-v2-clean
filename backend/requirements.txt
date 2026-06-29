@@ -13,3 +13,6 @@ python-jose[cryptography]
 pg8000
 stripe
 redis
+pdfplumber
+python-pptx
+Pillow
