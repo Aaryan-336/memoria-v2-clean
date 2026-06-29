@@ -114,7 +114,7 @@ export default function Home() {
   ]
 
   const featureCards = [
-    { icon: Layers, label: "Flashcards", desc: "Study cards", href: "/flashcards", color: "var(--accent-butter)", bgColor: "var(--accent-butter)" },
+    { icon: Layers, label: "Flashcards", desc: "Study cards", href: "/flashcards", color: "var(--accent-coral)", bgColor: "var(--accent-coral)" },
     { icon: Timer, label: "Quiz Mode", desc: "Test yourself", href: "/quiz", color: "var(--accent-sky)", bgColor: "var(--accent-sky)" },
   ]
 

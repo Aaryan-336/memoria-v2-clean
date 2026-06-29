@@ -60,7 +60,7 @@ export default function FlashcardsPage() {
         {/* Header */}
         <div className="mb-10 animate-memoria-fade-in">
           <div className="flex items-center gap-2 mb-3">
-            <Layers className="w-5 h-5 text-[var(--accent-yellow)]" />
+            <Layers className="w-5 h-5 text-[var(--accent-coral)]" />
             <span className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">
               Study Deck
             </span>
@@ -93,7 +93,7 @@ export default function FlashcardsPage() {
                 className={`memoria-card group relative p-6 flex flex-col justify-between animate-memoria-fade-in stagger-${Math.min(idx + 1, 6)}`}
               >
                 <div>
-                  <h3 className="text-foreground font-semibold text-lg line-clamp-1 mb-2 group-hover:text-[var(--accent-yellow)] transition-colors">
+                  <h3 className="text-foreground font-semibold text-lg line-clamp-1 mb-2 group-hover:text-[var(--accent-coral)] transition-colors">
                     {note.title}
                   </h3>
                   <p className="text-muted-foreground text-sm line-clamp-3 mb-6 leading-relaxed">
@@ -119,7 +119,7 @@ export default function FlashcardsPage() {
                     <button
                       onClick={() => handleGenerate(note.id)}
                       disabled={generating === note.id}
-                      className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--accent-yellow)]/15 hover:bg-[var(--accent-yellow)]/25 text-[#855B00] dark:text-[#FFD254] border border-[var(--accent-yellow)]/40 rounded-full text-xs font-bold transition-all disabled:opacity-50 flex-1 justify-center cursor-pointer"
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--accent-coral)]/15 hover:bg-[var(--accent-coral)]/25 text-[#C42E1C] dark:text-[#FFA094] border border-[var(--accent-coral)]/40 rounded-full text-xs font-bold transition-all disabled:opacity-50 flex-1 justify-center cursor-pointer"
                     >
                       {generating === note.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

@@ -155,9 +155,9 @@ function BottomDock() {
 
   const items = [...navItems]
   if (noteId) {
-    // Insert Flashcards (yellow) and Quiz (blue) before the Notes tab
+    // Insert Flashcards (red/coral) and Quiz (blue) before the Notes tab
     items.splice(3, 0,
-      { icon: Layers, label: "Flashcards", href: `/flashcards/${noteId}`, color: "var(--accent-yellow)" },
+      { icon: Layers, label: "Flashcards", href: `/flashcards/${noteId}`, color: "var(--accent-coral)" },
       { icon: Timer, label: "Quiz", href: `/quiz/${noteId}`, color: "var(--accent-blue)" }
     )
   }

@@ -224,13 +224,13 @@ export default function FlashcardNotePage() {
                   {totalCount} cards
                 </span>
                 <span className="text-muted-foreground/30">•</span>
-                <span className="text-[#8F6200] text-sm font-bold">
+                <span className="text-[#C42E1C] text-sm font-bold">
                   {reviewedCount} reviewed
                 </span>
                 {/* Progress bar */}
                 <div className="w-28 h-2 bg-secondary rounded-full overflow-hidden border border-border/40">
                   <div
-                    className="h-full bg-[var(--accent-yellow)] rounded-full transition-all duration-300"
+                    className="h-full bg-[var(--accent-coral)] rounded-full transition-all duration-300"
                     style={{
                       width: `${totalCount > 0 ? (reviewedCount / totalCount) * 100 : 0}%`,
                     }}
@@ -243,7 +243,7 @@ export default function FlashcardNotePage() {
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent-yellow)]/15 hover:bg-[var(--accent-yellow)]/25 text-[#855B00] dark:text-[#FFD254] border border-[var(--accent-yellow)]/40 rounded-full text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent-coral)]/15 hover:bg-[var(--accent-coral)]/25 text-[#C42E1C] dark:text-[#FFA094] border border-[var(--accent-coral)]/40 rounded-full text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
           >
             {generating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -263,7 +263,7 @@ export default function FlashcardNotePage() {
         {/* Loading */}
         {loading && (
           <div className="flex flex-col items-center gap-4 py-20 animate-memoria-fade-in">
-            <Loader2 className="w-8 h-8 text-[var(--accent-yellow)] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[var(--accent-coral)] animate-spin" />
             <p className="text-muted-foreground text-sm font-medium">Loading study materials…</p>
           </div>
         )}
@@ -271,7 +271,7 @@ export default function FlashcardNotePage() {
         {/* Generating */}
         {generating && (
           <div className="flex flex-col items-center gap-4 py-20 animate-memoria-fade-in">
-            <Loader2 className="w-8 h-8 text-[var(--accent-yellow)] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[var(--accent-coral)] animate-spin" />
             <p className="text-muted-foreground text-sm font-medium">
               AI Coach is building your study deck…
             </p>
@@ -286,7 +286,7 @@ export default function FlashcardNotePage() {
             <p className="text-muted-foreground text-sm mb-6">Create custom AI-generated flashcards to review this note.</p>
             <button
               onClick={handleGenerate}
-              className="px-6 py-2.5 bg-[var(--accent-yellow)] text-[#0B0B0F] rounded-full text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-md hover:opacity-90"
+              className="px-6 py-2.5 bg-[var(--accent-coral)] text-white rounded-full text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-md hover:opacity-90"
             >
               <Sparkles className="w-4 h-4" />
               Generate Flashcards
