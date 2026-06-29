@@ -1,6 +1,7 @@
 "use client"
 import * as React from "react"
-import { motion } from "framer-motion"
+import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import {
   Home,
@@ -11,7 +12,7 @@ import {
   Layers,
   Timer,
 } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 
 /* ── Navigation Items ── */
@@ -39,44 +40,102 @@ function NavItem({
   href,
   active,
   color,
+  noteId,
 }: {
   icon: React.ElementType
   label: string
   href: string
   active: boolean
   color?: string
+  noteId?: string | null
 }) {
   const displayColor = color || "var(--accent-forest)"
+  const [showPill, setShowPill] = useState(false)
+  const pillRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!showPill) return
+    const handleClickOutside = (event: MouseEvent) => {
+      if (pillRef.current && !pillRef.current.contains(event.target as Node)) {
+        setShowPill(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [showPill])
+
+  const handleQuizClick = (e: React.MouseEvent) => {
+    if (label === "Quiz" && noteId) {
+      e.preventDefault()
+      e.stopPropagation()
+      setShowPill(!showPill)
+    }
+  }
 
   return (
-    <Link
-      href={href}
-      className={cn(
-        "relative flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all duration-200 flex-1 min-w-0"
-      )}
-      style={{
-        color: active ? displayColor : color || "var(--muted-foreground)",
-        opacity: active ? 1 : color ? 0.75 : 0.65
-      }}
-    >
-      <Icon
-        className="w-5 h-5 transition-colors"
-        style={{ color: active ? displayColor : color || undefined }}
-      />
-      <span
-        className="text-[10px] font-semibold transition-colors"
+    <div className="relative flex-1 flex justify-center min-w-0" ref={pillRef}>
+      <Link
+        href={href}
+        onClick={handleQuizClick}
+        className={cn(
+          "relative flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all duration-200 w-full"
+        )}
+        style={{
+          color: active ? displayColor : color || "var(--muted-foreground)",
+          opacity: active ? 1 : color ? 0.75 : 0.65
+        }}
       >
-        {label}
-      </span>
-      {active && (
-        <motion.div
-          layoutId="dock-active-indicator"
-          className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-[var(--accent-forest)]"
-          style={{ backgroundColor: displayColor }}
-          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+        <Icon
+          className="w-5 h-5 transition-colors"
+          style={{ color: active ? displayColor : color || undefined }}
         />
-      )}
-    </Link>
+        <span
+          className="text-[10px] font-semibold transition-colors"
+        >
+          {label}
+        </span>
+        {active && (
+          <motion.div
+            layoutId="dock-active-indicator"
+            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-full bg-[var(--accent-forest)]"
+            style={{ backgroundColor: displayColor }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          />
+        )}
+      </Link>
+
+      {/* Pill configuration popup above the button */}
+      <AnimatePresence>
+        {label === "Quiz" && showPill && noteId && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
+            exit={{ opacity: 0, y: 10, scale: 0.95, x: "-50%" }}
+            className="absolute bottom-[72px] left-1/2 bg-card border border-[var(--border)] rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-[var(--shadow-elevated)] z-50 pointer-events-auto min-w-[200px] justify-between"
+          >
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider pl-2 pr-1">
+              Length:
+            </span>
+            <div className="flex gap-1">
+              {[5, 10, 15, 20].map((q) => (
+                <button
+                  key={q}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowPill(false)
+                    router.push(`/quiz/${noteId}?questions=${q}`)
+                  }}
+                  className="px-2.5 py-1 rounded-full text-[10px] font-extrabold border border-border/40 hover:bg-[var(--accent-blue)]/10 text-muted-foreground hover:text-[#1A5FA0] hover:border-[var(--accent-blue)]/30 transition-all cursor-pointer"
+                >
+                  {q}Q
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -122,6 +181,7 @@ function BottomDock() {
           <NavItem
             key={item.href}
             {...item}
+            noteId={noteId}
             active={
               item.href === "/"
                 ? pathname === "/"
