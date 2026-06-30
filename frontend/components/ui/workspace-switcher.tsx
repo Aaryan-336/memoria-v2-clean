@@ -56,7 +56,7 @@ export function WorkspaceSwitcher() {
   }
 
   return (
-    <div className="relative z-40" ref={dropdownRef}>
+    <div className="relative z-50" ref={dropdownRef}>
       {/* Switcher Button */}
       <motion.button
         whileHover={{ scale: 1.02 }}
@@ -88,7 +88,7 @@ export function WorkspaceSwitcher() {
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
-              "absolute left-0 mt-2 w-72 rounded-[24px] p-2.5",
+              "absolute right-0 mt-2 w-72 rounded-[24px] p-2.5",
               "bg-card border border-border/80 shadow-[var(--shadow-elevated)]",
               "flex flex-col gap-1.5 overflow-hidden"
             )}

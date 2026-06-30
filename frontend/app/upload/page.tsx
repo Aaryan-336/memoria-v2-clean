@@ -171,7 +171,7 @@ export default function UploadPage() {
     <div className="min-h-screen bg-background">
       <div className="memoria-container py-8 lg:py-12 max-w-2xl">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4 animate-memoria-fade-in">
+        <div className="relative z-30 flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4 animate-memoria-fade-in">
           <div>
             <Link
               href="/"

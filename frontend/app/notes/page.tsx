@@ -62,7 +62,7 @@ export default function NotesPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="memoria-container py-8 lg:py-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 animate-memoria-fade-in">
+        <div className="relative z-30 flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 animate-memoria-fade-in">
           <div>
             <Link href="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-4 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back to dashboard
