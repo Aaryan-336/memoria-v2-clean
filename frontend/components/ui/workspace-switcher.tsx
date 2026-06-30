@@ -88,7 +88,7 @@ export function WorkspaceSwitcher() {
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={cn(
-              "absolute right-0 mt-2 w-72 rounded-[24px] p-2.5",
+              "absolute left-0 md:left-auto md:right-0 mt-2 w-72 rounded-[24px] p-2.5",
               "bg-card border border-border/80 shadow-[var(--shadow-elevated)]",
               "flex flex-col gap-1.5 overflow-hidden"
             )}
