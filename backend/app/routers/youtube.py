@@ -41,28 +41,31 @@ async def youtube(
     check_memory_limit(sub, memories_count)
 
     try:
-        from youtube_transcript_api import YouTubeTranscriptApi
-        from youtube_transcript_api.proxies import GenericProxyConfig
-
         match = re.search(r'(?:v=|youtu\.be/)([a-zA-Z0-9_-]{11})', req.url)
         if not match:
             raise HTTPException(status_code=400, detail="Invalid YouTube URL")
 
         video_id = match.group(1)
 
-        # Use proxy if configured (required on cloud hosts like Render/AWS
-        # where YouTube blocks transcript requests from datacenter IPs)
-        proxy_config = None
-        if settings.youtube_proxy_url:
-            proxy_config = GenericProxyConfig(
-                https_url=settings.youtube_proxy_url,
-                http_url=settings.youtube_proxy_url,
-            )
+        # Use pre-fetched transcript from frontend (Vercel) if available,
+        # otherwise try fetching server-side (may fail on cloud hosts)
+        if req.transcript and req.transcript.strip():
+            transcript = req.transcript.strip()
+        else:
+            from youtube_transcript_api import YouTubeTranscriptApi
+            from youtube_transcript_api.proxies import GenericProxyConfig
 
-        ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
-        transcript_list = ytt_api.fetch(video_id)
-        transcript_list = [{"text": t.text} for t in transcript_list]
-        transcript = " ".join([t["text"] for t in transcript_list])
+            proxy_config = None
+            if settings.youtube_proxy_url:
+                proxy_config = GenericProxyConfig(
+                    https_url=settings.youtube_proxy_url,
+                    http_url=settings.youtube_proxy_url,
+                )
+
+            ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
+            transcript_list = ytt_api.fetch(video_id)
+            transcript_list = [{"text": t.text} for t in transcript_list]
+            transcript = " ".join([t["text"] for t in transcript_list])
 
         result = process_youtube(settings.anthropic_api_key, req.url, transcript)
         if not result:

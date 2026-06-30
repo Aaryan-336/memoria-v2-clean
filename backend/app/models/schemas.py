@@ -23,6 +23,7 @@ class YouTubeRequest(BaseModel):
     """Request to process a YouTube video."""
     url: str
     workspace_id: str | None = None
+    transcript: str | None = None  # Pre-fetched transcript from frontend (Vercel)
 
 
 class AskRequest(BaseModel):

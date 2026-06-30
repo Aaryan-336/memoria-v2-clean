@@ -28,11 +28,31 @@ export default function YouTubePage() {
     setLoading(true)
     setError("")
     try {
+      // Step 1: Fetch transcript via Vercel serverless function
+      // (Vercel's IPs are not blocked by YouTube, unlike Render's)
+      let transcript = ""
+      try {
+        const transcriptRes = await fetch("/api/youtube-transcript", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        })
+        const transcriptData = await transcriptRes.json()
+        if (transcriptRes.ok && transcriptData.transcript) {
+          transcript = transcriptData.transcript
+        }
+      } catch {
+        // If Vercel transcript fetch fails, let the backend try its own fetch
+        console.warn("Frontend transcript fetch failed, falling back to backend")
+      }
+
+      // Step 2: Send URL + transcript to the backend for AI processing
       const data = await apiFetch<any>("/api/youtube", {
         method: "POST",
         body: JSON.stringify({
           url,
-          workspace_id: currentWorkspace?.id || null
+          workspace_id: currentWorkspace?.id || null,
+          transcript: transcript || null,
         })
       })
       setResult(data)
