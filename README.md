@@ -13,7 +13,7 @@
 
 ## 📖 Overview
 
-**Memoria V2** is an advanced **AI-Powered Lecture Intelligence Platform** designed to act as a digital second brain for college students, teachers, and researchers. It converts multi-source lecture formats—live voice recording, YouTube videos, documents, and notes—into comprehensive study kits featuring AI-generated structured notes, flashcards, interactive quizzes, dynamic conceptual diagrams, and multi-agent deep research capabilities.
+**Memoria V2** is an advanced **AI-Powered Lecture Intelligence Platform** designed to act as a digital second brain for college students, teachers, and researchers. It converts multi-source lectur formats—live voice recording, YouTube videos, documents, and notes—into comprehensive study kits featuring AI-generated structured notes, flashcards, interactive quizzes, dynamic conceptual diagrams, and multi-agent deep research capabilities.
 
 Equipped with a secure **Supabase Authentication** layer, collaborative **Multi-User Workspaces**, and a full-featured **Stripe Subscription Billing** module, Memoria V2 provides a seamless, robust enterprise-grade learning management experience.
 
