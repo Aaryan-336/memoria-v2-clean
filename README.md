@@ -40,9 +40,14 @@ Memoria V2 is a fully realized multi-tier application. Here is the current state
 *   👥 **Multi-User Workspaces**: Create dedicated folders for shared study sessions or project work groups with granular **Role-Based Access Control (RBAC)**: `Owner`, `Admin`, `Editor`, and `Viewer`.
 
 ### 💳 Stripe & Usage Infrastructure
-*   🔒 **Secure Authentication**: End-to-end sessions managed via Supabase SSR Authentication.
+*   🛡️ **Secure Authentication**: End-to-end sessions managed via Supabase SSR Authentication.
 *   💳 **Subscription System**: Four subscription plans (Explorer, Pro, Premium, Team) synced to Stripe billing intervals.
 *   ⚡ **Daily Usage Enforcement**: Strict rate limits (AI queries, YouTube imports, flashcard and quiz generations) tracked daily to manage API overhead.
+
+### 🔒 Security & Data Isolation
+*   🛡️ **Row-Level Security (RLS)**: Database tables enforce strict RLS policies, ensuring users can only read, write, or delete their own notes and flashcards.
+*   🔑 **JWT Token Validation**: Backend requests are authenticated via Supabase JWT access tokens, which are cryptographically verified using `SUPABASE_JWT_SECRET` by FastAPI dependencies before executing routers.
+*   📦 **Zero-Leak Secret Architecture**: Critical API keys (Anthropic/Groq, Stripe, Supabase Service role keys) are completely isolated backend-side and never exposed to the client-side browser bundle.
 
 ---
 
