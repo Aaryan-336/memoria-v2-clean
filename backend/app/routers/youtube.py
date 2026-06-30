@@ -42,13 +42,25 @@ async def youtube(
 
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
+        from youtube_transcript_api.proxies import GenericProxyConfig
 
         match = re.search(r'(?:v=|youtu\.be/)([a-zA-Z0-9_-]{11})', req.url)
         if not match:
             raise HTTPException(status_code=400, detail="Invalid YouTube URL")
 
         video_id = match.group(1)
-        transcript_list = YouTubeTranscriptApi().fetch(video_id)
+
+        # Use proxy if configured (required on cloud hosts like Render/AWS
+        # where YouTube blocks transcript requests from datacenter IPs)
+        proxy_config = None
+        if settings.youtube_proxy_url:
+            proxy_config = GenericProxyConfig(
+                https_url=settings.youtube_proxy_url,
+                http_url=settings.youtube_proxy_url,
+            )
+
+        ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
+        transcript_list = ytt_api.fetch(video_id)
         transcript_list = [{"text": t.text} for t in transcript_list]
         transcript = " ".join([t["text"] for t in transcript_list])
 
@@ -106,4 +118,15 @@ async def youtube(
                 status_code=500,
                 detail="Invalid Anthropic API key. Please update ANTHROPIC_API_KEY in backend/.env",
             )
+        # Catch YouTube IP block errors and return a user-friendly message
+        if "blocking" in err.lower() or "ip" in err.lower() or "too many requests" in err.lower():
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "YouTube is temporarily blocking transcript requests from this server. "
+                    "This is a known limitation when running on cloud hosting providers. "
+                    "Please try again later, or use the audio recording or file upload features instead."
+                ),
+            )
         raise HTTPException(status_code=500, detail=err)
+

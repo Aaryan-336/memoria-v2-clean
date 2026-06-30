@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # ── Redis ───────────────────────────────────────────────
     redis_url: str = ""
 
+    # ── YouTube Proxy (to bypass cloud IP blocks) ──────────
+    youtube_proxy_url: str = ""
+
     # ── App URLs ────────────────────────────────────────────
     frontend_url: str = "http://localhost:3000"
 
