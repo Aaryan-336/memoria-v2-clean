@@ -5,168 +5,76 @@
  * strategies to handle YouTube's IP blocking of cloud providers.
  *
  * Strategies (tried in order):
- * 1. InnerTube Player API (WEB client) — direct YouTube API with browser headers
- * 2. InnerTube Player API (ANDROID client) — mobile YouTube API
- * 3. YouTube page scraping with consent cookies — bypasses EU consent redirects
- * 4. Invidious public API — community-run YouTube proxies
+ * 1. youtube-transcript.ai public API — works from any IP, no auth needed
+ * 2. youtube-transcript npm package — works locally / non-blocked IPs
+ * 3. Direct InnerTube API with WEB client context
  */
 
 import { NextRequest, NextResponse } from "next/server";
 
-// ── Shared Helpers ────────────────────────────────────────────────────
+// ── Strategy 1: youtube-transcript.ai public API ──────────────────────
+// This service handles YouTube's anti-bot measures on their side.
+// The .txt endpoint returns a formatted transcript that we parse.
 
-function decodeHtmlEntities(text: string): string {
-  return text
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/<[^>]+>/g, "");
-}
-
-function parseTranscriptXml(xml: string): string | null {
-  const matches = [...xml.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)];
-  if (matches.length === 0) return null;
-  const text = matches
-    .map((m) => decodeHtmlEntities(m[1]))
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return text || null;
-}
-
-async function extractTranscriptFromCaptionTracks(
-  captionTracks: any[]
-): Promise<string | null> {
-  // Prefer English track, fall back to first available
-  const track =
-    captionTracks.find((t: any) => t.languageCode === "en") ||
-    captionTracks[0];
-  const baseUrl = track?.baseUrl;
-  if (!baseUrl) return null;
-
-  // Try JSON3 format first (more structured, easier to parse)
-  try {
-    const jsonRes = await fetch(`${baseUrl}&fmt=json3`);
-    if (jsonRes.ok) {
-      const data = await jsonRes.json();
-      const events = data?.events;
-      if (Array.isArray(events)) {
-        const text = events
-          .filter((e: any) => e.segs)
-          .map((e: any) => e.segs.map((s: any) => s.utf8 || "").join(""))
-          .join(" ")
-          .replace(/\n/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-        if (text) return text;
-      }
-    }
-  } catch {
-    /* fall through to XML */
-  }
-
-  // Fallback to XML format
-  try {
-    const xmlRes = await fetch(baseUrl);
-    if (xmlRes.ok) {
-      return parseTranscriptXml(await xmlRes.text());
-    }
-  } catch {
-    /* exhausted */
-  }
-
-  return null;
-}
-
-// ── Strategy 1: InnerTube Player API (WEB client) ─────────────────────
-
-async function fetchViaInnerTubeWeb(
-  videoId: string
-): Promise<string | null> {
+async function fetchViaTranscriptAI(videoId: string): Promise<string | null> {
   try {
     const res = await fetch(
-      "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
+      `https://youtube-transcript.ai/transcript/${videoId}.txt`,
       {
-        method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-          Origin: "https://www.youtube.com",
-          Referer: "https://www.youtube.com/",
+          Accept: "text/plain",
         },
-        body: JSON.stringify({
-          context: {
-            client: {
-              clientName: "WEB",
-              clientVersion: "2.20241202.07.00",
-              hl: "en",
-              gl: "US",
-            },
-          },
-          videoId,
-        }),
+        signal: AbortSignal.timeout(15000),
       }
     );
+
     if (!res.ok) return null;
-    const data = await res.json();
-    const tracks =
-      data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-    if (!Array.isArray(tracks) || tracks.length === 0) return null;
-    return await extractTranscriptFromCaptionTracks(tracks);
+    const text = await res.text();
+
+    // The .txt response starts with markdown headers, then has timestamped lines.
+    // Format: "# Transcript: ...\n\nSource video: ...\n\n## Transcript\n[0:01] text\n[0:32] text\n..."
+    // We strip the header section and timestamps, keeping only the transcript text.
+    const transcriptSection = text.split("## Transcript\n")[1];
+    if (!transcriptSection) {
+      // Might be plain text without headers — use the whole thing
+      return text.length > 50 ? text : null;
+    }
+
+    // Remove timestamp markers like [0:01], [12:34], [1:23:45]
+    const cleaned = transcriptSection
+      .replace(/\[[\d:]+\]\s*/g, "")
+      .replace(/\n+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return cleaned.length > 50 ? cleaned : null;
   } catch {
     return null;
   }
 }
 
-// ── Strategy 2: InnerTube Player API (ANDROID client) ─────────────────
+// ── Strategy 2: youtube-transcript npm package ────────────────────────
+// Works from non-blocked IPs (local dev, some cloud regions)
 
-async function fetchViaInnerTubeAndroid(
-  videoId: string
-): Promise<string | null> {
+async function fetchViaNpmPackage(videoId: string): Promise<string | null> {
   try {
-    const res = await fetch(
-      "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent":
-            "com.google.android.youtube/19.29.37 (Linux; U; Android 14)",
-        },
-        body: JSON.stringify({
-          context: {
-            client: {
-              clientName: "ANDROID",
-              clientVersion: "19.29.37",
-              hl: "en",
-              gl: "US",
-              androidSdkVersion: 34,
-            },
-          },
-          videoId,
-        }),
-      }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const tracks =
-      data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-    if (!Array.isArray(tracks) || tracks.length === 0) return null;
-    return await extractTranscriptFromCaptionTracks(tracks);
+    const { YoutubeTranscript } = await import("youtube-transcript");
+    const items = await YoutubeTranscript.fetchTranscript(videoId);
+    if (!items || items.length === 0) return null;
+    const text = items.map((item: any) => item.text).join(" ");
+    return text.length > 50 ? text : null;
   } catch {
     return null;
   }
 }
 
-// ── Strategy 3: YouTube page scraping with consent cookies ────────────
+// ── Strategy 3: Direct InnerTube API with page scrape ─────────────────
+// Fetches the YouTube watch page and extracts caption data from the
+// embedded ytInitialPlayerResponse JSON, then fetches the caption XML.
 
-async function fetchViaPageScrape(
-  videoId: string
-): Promise<string | null> {
+async function fetchViaPageScrape(videoId: string): Promise<string | null> {
   try {
     const res = await fetch(
       `https://www.youtube.com/watch?v=${videoId}`,
@@ -180,92 +88,78 @@ async function fetchViaPageScrape(
           Cookie:
             "CONSENT=PENDING+987; SOCS=CAESEwgDEgk2NDcwMTEwNTQaAmVuIAEaBgiA_LyaBg",
         },
+        signal: AbortSignal.timeout(10000),
       }
     );
     if (!res.ok) return null;
     const html = await res.text();
 
-    // Extract ytInitialPlayerResponse from the page
-    const match = html.match(
-      /var\s+ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\})\s*;\s*(?:var|<\/script>)/
-    );
-    if (!match) return null;
+    if (html.includes('class="g-recaptcha"')) return null;
 
-    const playerData = JSON.parse(match[1]);
+    // Use brace-depth parsing like the npm package (regex is unreliable for huge JSON)
+    const startToken = "var ytInitialPlayerResponse = ";
+    const startIndex = html.indexOf(startToken);
+    if (startIndex === -1) return null;
+    const jsonStart = startIndex + startToken.length;
+
+    let depth = 0;
+    let jsonEnd = -1;
+    for (let i = jsonStart; i < html.length; i++) {
+      if (html[i] === "{") depth++;
+      else if (html[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          jsonEnd = i + 1;
+          break;
+        }
+      }
+    }
+    if (jsonEnd === -1) return null;
+
+    const playerData = JSON.parse(html.slice(jsonStart, jsonEnd));
     const tracks =
       playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
     if (!Array.isArray(tracks) || tracks.length === 0) return null;
-    return await extractTranscriptFromCaptionTracks(tracks);
+
+    // Prefer English track
+    const track =
+      tracks.find((t: any) => t.languageCode === "en") || tracks[0];
+    const baseUrl = track?.baseUrl;
+    if (!baseUrl) return null;
+
+    // Fetch the actual caption XML
+    const captionRes = await fetch(baseUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!captionRes.ok) return null;
+    const xml = await captionRes.text();
+
+    // Parse transcript XML
+    const matches = [...xml.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)];
+    if (matches.length === 0) return null;
+    const text = matches
+      .map((m) =>
+        m[1]
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&nbsp;/g, " ")
+          .replace(/<[^>]+>/g, "")
+      )
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return text.length > 50 ? text : null;
   } catch {
     return null;
   }
-}
-
-// ── Strategy 4: Invidious public API ──────────────────────────────────
-
-async function fetchViaInvidious(
-  videoId: string
-): Promise<string | null> {
-  const instances = [
-    "https://inv.nadeko.net",
-    "https://invidious.fdn.fr",
-    "https://vid.puffyan.us",
-    "https://invidious.nerdvpn.de",
-    "https://yewtu.be",
-  ];
-
-  for (const instance of instances) {
-    try {
-      // Get available caption tracks
-      const listRes = await fetch(
-        `${instance}/api/v1/captions/${videoId}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (!listRes.ok) continue;
-      const listData = await listRes.json();
-      const captions = listData?.captions;
-      if (!Array.isArray(captions) || captions.length === 0) continue;
-
-      // Prefer English caption
-      const caption =
-        captions.find(
-          (c: any) =>
-            c.language_code === "en" ||
-            c.label?.toLowerCase().includes("english")
-        ) || captions[0];
-
-      // Download subtitle content
-      let subUrl = caption.url;
-      if (!subUrl.startsWith("http")) subUrl = `${instance}${subUrl}`;
-      const subRes = await fetch(subUrl, {
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!subRes.ok) continue;
-      const vttText = await subRes.text();
-
-      // Parse VTT/SRT — keep only actual transcript lines
-      const lines = vttText
-        .split("\n")
-        .filter(
-          (line) =>
-            line.trim() &&
-            !line.includes("-->") &&
-            !line.trim().match(/^\d+$/) &&
-            !line.startsWith("WEBVTT") &&
-            !line.startsWith("Kind:") &&
-            !line.startsWith("Language:") &&
-            !line.startsWith("NOTE")
-        )
-        .map((line) => line.trim());
-
-      const text = lines.join(" ").replace(/\s+/g, " ").trim();
-      if (text) return text;
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
 }
 
 // ── Main Route Handler ────────────────────────────────────────────────
@@ -291,22 +185,21 @@ export async function POST(request: NextRequest) {
 
     const videoId = match[1];
 
-    // Try multiple strategies in order of reliability
+    // Try multiple strategies — prioritize services that work from cloud IPs
     const strategies: { name: string; fn: () => Promise<string | null> }[] = [
-      { name: "InnerTube WEB", fn: () => fetchViaInnerTubeWeb(videoId) },
       {
-        name: "InnerTube ANDROID",
-        fn: () => fetchViaInnerTubeAndroid(videoId),
+        name: "youtube-transcript.ai",
+        fn: () => fetchViaTranscriptAI(videoId),
       },
+      { name: "youtube-transcript npm", fn: () => fetchViaNpmPackage(videoId) },
       { name: "Page scrape", fn: () => fetchViaPageScrape(videoId) },
-      { name: "Invidious API", fn: () => fetchViaInvidious(videoId) },
     ];
 
     for (const strategy of strategies) {
       console.log(`[youtube-transcript] Trying: ${strategy.name}`);
       try {
         const transcript = await strategy.fn();
-        if (transcript && transcript.length > 50) {
+        if (transcript) {
           console.log(
             `[youtube-transcript] ✓ Success via ${strategy.name} (${transcript.length} chars)`
           );

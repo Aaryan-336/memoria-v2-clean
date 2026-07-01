@@ -24,68 +24,42 @@ from app.services.usage_service import increment_usage, track_usage_to_db, log_u
 router = APIRouter(prefix="/api", tags=["youtube"])
 
 
-async def _fetch_via_invidious(video_id: str):
-    """Fetch transcript via public Invidious API instances as fallback."""
+async def _fetch_via_transcript_ai(video_id: str):
+    """Fetch transcript via youtube-transcript.ai public API (works from any IP)."""
+    import re
     import httpx
 
-    instances = [
-        "https://inv.nadeko.net",
-        "https://invidious.fdn.fr",
-        "https://vid.puffyan.us",
-        "https://invidious.nerdvpn.de",
-        "https://yewtu.be",
-    ]
-
-    for instance in instances:
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                # Get available caption tracks
-                caps_res = await client.get(
-                    f"{instance}/api/v1/captions/{video_id}"
-                )
-                if caps_res.status_code != 200:
-                    continue
-                captions = caps_res.json().get("captions", [])
-                if not captions:
-                    continue
-
-                # Prefer English caption
-                caption = next(
-                    (
-                        c for c in captions
-                        if c.get("language_code") == "en"
-                        or "english" in c.get("label", "").lower()
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            res = await client.get(
+                f"https://youtube-transcript.ai/transcript/{video_id}.txt",
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/131.0.0.0 Safari/537.36"
                     ),
-                    captions[0],
-                )
+                    "Accept": "text/plain",
+                },
+            )
+            if res.status_code != 200:
+                return None
 
-                # Download subtitle content
-                sub_url = caption.get("url", "")
-                if not sub_url.startswith("http"):
-                    sub_url = f"{instance}{sub_url}"
-                sub_res = await client.get(sub_url)
-                if sub_res.status_code != 200:
-                    continue
+            text = res.text
+            # The .txt response has a header section, then "## Transcript\n" followed
+            # by timestamped lines like "[0:01] actual text here\n"
+            parts = text.split("## Transcript\n", 1)
+            transcript_section = parts[1] if len(parts) > 1 else text
 
-                # Parse VTT/SRT content — keep only transcript text lines
-                lines = [
-                    line.strip()
-                    for line in sub_res.text.split("\n")
-                    if line.strip()
-                    and "-->" not in line
-                    and not line.strip().isdigit()
-                    and not line.startswith("WEBVTT")
-                    and not line.startswith("Kind:")
-                    and not line.startswith("Language:")
-                    and not line.startswith("NOTE")
-                ]
-                text = " ".join(lines).strip()
-                if text:
-                    print(f"[youtube] Invidious ({instance}) succeeded")
-                    return text
-        except Exception as e:
-            print(f"[youtube] Invidious ({instance}) failed: {e}")
-            continue
+            # Remove timestamp markers like [0:01], [12:34], [1:23:45]
+            cleaned = re.sub(r"\[[\d:]+\]\s*", "", transcript_section)
+            cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+            if len(cleaned) > 50:
+                print(f"[youtube] youtube-transcript.ai succeeded ({len(cleaned)} chars)")
+                return cleaned
+    except Exception as e:
+        print(f"[youtube] youtube-transcript.ai failed: {e}")
 
     return None
 
@@ -139,12 +113,12 @@ async def youtube(
             except Exception as yt_err:
                 print(f"[youtube] youtube-transcript-api failed: {yt_err}")
 
-            # Strategy 2: Invidious public API fallback
+            # Strategy 2: youtube-transcript.ai public API fallback
             if not transcript:
                 try:
-                    transcript = await _fetch_via_invidious(video_id)
-                except Exception as inv_err:
-                    print(f"[youtube] Invidious fallback failed: {inv_err}")
+                    transcript = await _fetch_via_transcript_ai(video_id)
+                except Exception as ai_err:
+                    print(f"[youtube] youtube-transcript.ai fallback failed: {ai_err}")
 
             if not transcript:
                 raise HTTPException(
