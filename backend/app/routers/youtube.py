@@ -24,6 +24,72 @@ from app.services.usage_service import increment_usage, track_usage_to_db, log_u
 router = APIRouter(prefix="/api", tags=["youtube"])
 
 
+async def _fetch_via_invidious(video_id: str):
+    """Fetch transcript via public Invidious API instances as fallback."""
+    import httpx
+
+    instances = [
+        "https://inv.nadeko.net",
+        "https://invidious.fdn.fr",
+        "https://vid.puffyan.us",
+        "https://invidious.nerdvpn.de",
+        "https://yewtu.be",
+    ]
+
+    for instance in instances:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                # Get available caption tracks
+                caps_res = await client.get(
+                    f"{instance}/api/v1/captions/{video_id}"
+                )
+                if caps_res.status_code != 200:
+                    continue
+                captions = caps_res.json().get("captions", [])
+                if not captions:
+                    continue
+
+                # Prefer English caption
+                caption = next(
+                    (
+                        c for c in captions
+                        if c.get("language_code") == "en"
+                        or "english" in c.get("label", "").lower()
+                    ),
+                    captions[0],
+                )
+
+                # Download subtitle content
+                sub_url = caption.get("url", "")
+                if not sub_url.startswith("http"):
+                    sub_url = f"{instance}{sub_url}"
+                sub_res = await client.get(sub_url)
+                if sub_res.status_code != 200:
+                    continue
+
+                # Parse VTT/SRT content — keep only transcript text lines
+                lines = [
+                    line.strip()
+                    for line in sub_res.text.split("\n")
+                    if line.strip()
+                    and "-->" not in line
+                    and not line.strip().isdigit()
+                    and not line.startswith("WEBVTT")
+                    and not line.startswith("Kind:")
+                    and not line.startswith("Language:")
+                    and not line.startswith("NOTE")
+                ]
+                text = " ".join(lines).strip()
+                if text:
+                    print(f"[youtube] Invidious ({instance}) succeeded")
+                    return text
+        except Exception as e:
+            print(f"[youtube] Invidious ({instance}) failed: {e}")
+            continue
+
+    return None
+
+
 @router.post("/youtube")
 async def youtube(
     req: YouTubeRequest,
@@ -48,24 +114,46 @@ async def youtube(
         video_id = match.group(1)
 
         # Use pre-fetched transcript from frontend (Vercel) if available,
-        # otherwise try fetching server-side (may fail on cloud hosts)
+        # otherwise try fetching server-side with multiple fallback strategies
         if req.transcript and req.transcript.strip():
             transcript = req.transcript.strip()
         else:
-            from youtube_transcript_api import YouTubeTranscriptApi
-            from youtube_transcript_api.proxies import GenericProxyConfig
+            transcript = None
 
-            proxy_config = None
-            if settings.youtube_proxy_url:
-                proxy_config = GenericProxyConfig(
-                    https_url=settings.youtube_proxy_url,
-                    http_url=settings.youtube_proxy_url,
+            # Strategy 1: youtube-transcript-api (may fail on cloud hosts)
+            try:
+                from youtube_transcript_api import YouTubeTranscriptApi
+                from youtube_transcript_api.proxies import GenericProxyConfig
+
+                proxy_config = None
+                if settings.youtube_proxy_url:
+                    proxy_config = GenericProxyConfig(
+                        https_url=settings.youtube_proxy_url,
+                        http_url=settings.youtube_proxy_url,
+                    )
+
+                ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
+                transcript_list = ytt_api.fetch(video_id)
+                transcript_list = [{"text": t.text} for t in transcript_list]
+                transcript = " ".join([t["text"] for t in transcript_list])
+            except Exception as yt_err:
+                print(f"[youtube] youtube-transcript-api failed: {yt_err}")
+
+            # Strategy 2: Invidious public API fallback
+            if not transcript:
+                try:
+                    transcript = await _fetch_via_invidious(video_id)
+                except Exception as inv_err:
+                    print(f"[youtube] Invidious fallback failed: {inv_err}")
+
+            if not transcript:
+                raise HTTPException(
+                    status_code=503,
+                    detail=(
+                        "Could not fetch transcript from any source. "
+                        "Please paste the transcript manually using the option on the import page."
+                    ),
                 )
-
-            ytt_api = YouTubeTranscriptApi(proxy_config=proxy_config)
-            transcript_list = ytt_api.fetch(video_id)
-            transcript_list = [{"text": t.text} for t in transcript_list]
-            transcript = " ".join([t["text"] for t in transcript_list])
 
         result = process_youtube(settings.anthropic_api_key, req.url, transcript)
         if not result:
