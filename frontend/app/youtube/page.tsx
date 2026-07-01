@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { PlayCircle, Loader2, CheckCircle, ArrowLeft } from "lucide-react"
+import { PlayCircle, Loader2, CheckCircle, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
 import { apiFetch } from "@/lib/api"
@@ -16,6 +16,8 @@ export default function YouTubePage() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState("")
+  const [showManual, setShowManual] = useState(false)
+  const [manualTranscript, setManualTranscript] = useState("")
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -28,22 +30,25 @@ export default function YouTubePage() {
     setLoading(true)
     setError("")
     try {
-      // Step 1: Fetch transcript via Vercel serverless function
-      // (Vercel's IPs are not blocked by YouTube, unlike Render's)
-      let transcript = ""
-      try {
-        const transcriptRes = await fetch("/api/youtube-transcript", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        })
-        const transcriptData = await transcriptRes.json()
-        if (transcriptRes.ok && transcriptData.transcript) {
-          transcript = transcriptData.transcript
+      let transcript = manualTranscript.trim()
+
+      if (!transcript) {
+        // Step 1: Fetch transcript via Vercel serverless function
+        // (Vercel's IPs are not blocked by YouTube, unlike Render's)
+        try {
+          const transcriptRes = await fetch("/api/youtube-transcript", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          })
+          const transcriptData = await transcriptRes.json()
+          if (transcriptRes.ok && transcriptData.transcript) {
+            transcript = transcriptData.transcript
+          }
+        } catch {
+          // If Vercel transcript fetch fails, let the backend try its own fetch
+          console.warn("Frontend transcript fetch failed, falling back to backend")
         }
-      } catch {
-        // If Vercel transcript fetch fails, let the backend try its own fetch
-        console.warn("Frontend transcript fetch failed, falling back to backend")
       }
 
       // Step 2: Send URL + transcript to the backend for AI processing
@@ -58,6 +63,15 @@ export default function YouTubePage() {
       setResult(data)
     } catch (e: any) {
       setError(e.message || "Failed to process video")
+      // If blocked, automatically suggest manual input
+      if (
+        e.message?.toLowerCase().includes("blocking") ||
+        e.message?.toLowerCase().includes("limit") ||
+        e.message?.toLowerCase().includes("ip") ||
+        e.message?.toLowerCase().includes("temporarily")
+      ) {
+        setShowManual(true)
+      }
     }
     setLoading(false)
   }
@@ -88,7 +102,7 @@ export default function YouTubePage() {
         </div>
 
         {/* Input area */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-10 animate-memoria-fade-in stagger-1">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 animate-memoria-fade-in stagger-1">
           <div
             className="flex-1 flex items-center gap-3 px-5 rounded-[28px] bg-card border border-border focus-within:border-[var(--accent-forest)] focus-within:shadow-[0_0_0_3px_rgba(45,106,79,0.08)] transition-all"
             style={{ height: "56px" }}
@@ -124,8 +138,44 @@ export default function YouTubePage() {
           </button>
         </div>
 
+        {/* Toggle Manual input option */}
+        <div className="mb-6 animate-memoria-fade-in stagger-2">
+          <button
+            onClick={() => setShowManual(!showManual)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-[var(--accent-forest)] transition-all duration-200 cursor-pointer select-none"
+          >
+            {showManual ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {showManual ? "Hide manual transcript option" : "Need to paste transcript manually?"}
+          </button>
+
+          {showManual && (
+            <div className="mt-4 p-5 rounded-[20px] bg-card border border-border flex flex-col gap-4 animate-memoria-fade-in">
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-1">Manual Transcript Override</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  If automated fetching is blocked by YouTube, you can easily bypass this:
+                  <br />
+                  1. Open the video on YouTube.
+                  <br />
+                  2. Click the <strong>"..." (More)</strong> button under the video title and select <strong>"Show transcript"</strong>.
+                  <br />
+                  3. Select all, copy the text, and paste it below.
+                </p>
+              </div>
+
+              <textarea
+                value={manualTranscript}
+                onChange={(e) => setManualTranscript(e.target.value)}
+                placeholder="Paste the YouTube video transcript here..."
+                rows={6}
+                className="w-full p-4 rounded-xl bg-background border border-border focus:outline-none focus:border-[var(--accent-forest)] focus:shadow-[0_0_0_3px_rgba(45,106,79,0.08)] text-sm font-medium transition-all resize-y min-h-[120px]"
+              />
+            </div>
+          )}
+        </div>
+
         {error && (
-          <div className="p-4 rounded-full bg-[rgba(232,93,74,0.08)] border border-[rgba(232,93,74,0.2)] text-[var(--destructive)] text-sm font-semibold text-center mb-6 animate-memoria-fade-in">
+          <div className="p-5 rounded-[20px] bg-[rgba(232,93,74,0.08)] border border-[rgba(232,93,74,0.2)] text-[var(--destructive)] text-sm font-semibold text-center mb-6 animate-memoria-fade-in leading-relaxed">
             {error}
           </div>
         )}
